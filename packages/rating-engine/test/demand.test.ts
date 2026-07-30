@@ -94,10 +94,14 @@ describe('D13: one profile, two different maxima', () => {
 
 describe('D: the demand window is tariff data', () => {
   it('averages finer intervals up to the 15-minute window', () => {
-    // Five-minute data with a single 5-minute burst: 41.6667 kWh in 5 minutes is
-    // 500 kW instantaneous, but averaged over the surrounding 15-minute window
-    // (with 1/3 kWh in each of the other two intervals) it is
-    // (41.6667 + 0.3333 + 0.3333) / 0.25 h = 169.33 kW.
+    // Five-minute data with a single 5-minute burst. 125/3 kWh in five minutes is
+    // 500 kW instantaneous, but the 15-minute window [02:00, 02:15) holds three
+    // 5-minute intervals — the burst plus two at 1/3 kWh — so the metered average
+    // is (125/3 + 1/3 + 1/3) / 0.25 h = 508/3 = 169.33 kW.
+    //
+    // Averaging up to the window, rather than taking the finest peak available, is
+    // what the 15-minute definition means. Reporting 500 kW here would overstate
+    // the customer's demand charge by a factor of three.
     const fiveMinute = buildProfile({
       start: START,
       end: END,
@@ -106,9 +110,8 @@ describe('D: the demand window is tariff data', () => {
     });
     const bill = rate(fiveMinute, makeSyntheticTariff(), period(START, END), emptyContext());
 
-    // The 15-minute average is a third of the way to the 5-minute peak.
     expect(bill.diagnostics.demandWindowMinutes).toBe(15);
-    expect(bill.diagnostics.accountMaxDemandKw).toBeCloseTo(500 / 3 + 4 / 3, 6);
+    expect(bill.diagnostics.accountMaxDemandKw).toBeCloseTo(508 / 3, 6);
     expect(bill.warnings.filter((w) => w.includes('coarser'))).toHaveLength(0);
   });
 

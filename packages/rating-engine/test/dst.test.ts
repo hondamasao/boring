@@ -163,11 +163,17 @@ describe('A5: the peak window is five clock-hours on both transition days', () =
 describe('A3: a billing period spanning spring-forward', () => {
   // Feb 20 - Mar 20 2026, half-open. 9 days in February + 19 in March = 28 days,
   // 28 x 24 - 1 = 671 hours, 2684 quarter-hours.
-  // 20 weekdays x 5 h of winter mid-peak = 100 h -> 400 kWh @ 0.15 = 60.00
-  // remaining 2284 kWh                                    @ 0.08 = 182.72
-  // facilities 1 kWh / 0.25 h = 4 kW                      @ 20   =  80.00
-  // customer charge                                              = 100.00
-  //                                                        total   422.72
+  //
+  // This fixture gives EVERY day a 16:00-21:00 mid-peak window, weekends
+  // included, so mid-peak is 5 clock-hours x 28 days with no weekday counting to
+  // get wrong. That isolates the thing under test: the lost hour is at 2 a.m.,
+  // inside the off-peak block, so off-peak absorbs it and mid-peak is untouched.
+  //
+  // mid-peak  28 d x 5 h x 4 =  560 kWh @ 0.15 =  84.00
+  // off-peak  2684 - 560     = 2124 kWh @ 0.08 = 169.92
+  // facilities 1 kWh / 0.25 h = 4 kW    @ 20   =  80.00
+  // customer charge                            = 100.00
+  //                                      total   433.92
   const bill = rate(
     buildProfile({ start: '2026-02-20', end: '2026-03-20', kwh: flat(1) }),
     tariffWithWinterWeekendPeak(),
@@ -191,13 +197,16 @@ describe('A3: a billing period spanning spring-forward', () => {
     expect(bucketed).toBeCloseTo(2684, 9);
   });
 
-  it('splits mid-peak and off-peak by weekday count, unaffected by the transition', () => {
-    expect(energyKwh(bill, 'winter', 'mid-peak')).toBeCloseTo(400, 9);
-    expect(energyKwh(bill, 'winter', 'off-peak')).toBeCloseTo(2284, 9);
+  it('leaves the peak window at 5 clock-hours per day, absorbing the lost hour into off-peak', () => {
+    // 28 days x 5 h x 4 quarter-hours, exactly — the transition does not touch it.
+    expect(energyKwh(bill, 'winter', 'mid-peak')).toBeCloseTo(560, 9);
+    expect(energyKwh(bill, 'winter', 'off-peak')).toBeCloseTo(2124, 9);
+    // A DST-naive engine would have found 28 x 96 = 2688 intervals here.
+    expect(bill.diagnostics.totalKwh).toBeCloseTo(2684, 9);
   });
 
-  it('totals 422.72', () => {
-    expect(bill.total, describeBill(bill)).toBe(422.72);
+  it('totals 433.92', () => {
+    expect(bill.total, describeBill(bill)).toBe(433.92);
     expectLinesSumToTotal(bill);
   });
 });
@@ -205,11 +214,14 @@ describe('A3: a billing period spanning spring-forward', () => {
 describe('A4: a billing period spanning fall-back', () => {
   // Oct 20 - Nov 20 2026, half-open. 12 days in October + 19 in November = 31
   // days, 31 x 24 + 1 = 745 hours, 2980 quarter-hours.
-  // 23 weekdays x 5 h of winter mid-peak = 115 h -> 460 kWh @ 0.15 =  69.00
-  // remaining 2520 kWh                                     @ 0.08 = 201.60
-  // facilities 4 kW                                        @ 20   =  80.00
-  // customer charge                                               = 100.00
-  //                                                         total   450.60
+  // The repeated 1 a.m. is inside the off-peak block, so off-peak gains the hour
+  // and mid-peak stays at 5 clock-hours x 31 days.
+  //
+  // mid-peak  31 d x 5 h x 4 =  620 kWh @ 0.15 =  93.00
+  // off-peak  2980 - 620     = 2360 kWh @ 0.08 = 188.80
+  // facilities 4 kW                     @ 20   =  80.00
+  // customer charge                            = 100.00
+  //                                      total   461.80
   const bill = rate(
     buildProfile({ start: '2026-10-20', end: '2026-11-20', kwh: flat(1) }),
     tariffWithWinterWeekendPeak(),
@@ -222,14 +234,15 @@ describe('A4: a billing period spanning fall-back', () => {
     expect(bill.billingPeriod.hours).toBe(745);
   });
 
-  it('conserves the extra hour of usage', () => {
+  it('conserves the extra hour of usage, billing it off-peak', () => {
+    // A DST-naive engine would have found 31 x 96 = 2976 intervals here.
     expect(bill.diagnostics.totalKwh).toBeCloseTo(2980, 9);
-    expect(energyKwh(bill, 'winter', 'mid-peak')).toBeCloseTo(460, 9);
-    expect(energyKwh(bill, 'winter', 'off-peak')).toBeCloseTo(2520, 9);
+    expect(energyKwh(bill, 'winter', 'mid-peak')).toBeCloseTo(620, 9);
+    expect(energyKwh(bill, 'winter', 'off-peak')).toBeCloseTo(2360, 9);
   });
 
-  it('totals 450.60', () => {
-    expect(bill.total, describeBill(bill)).toBe(450.6);
+  it('totals 461.80', () => {
+    expect(bill.total, describeBill(bill)).toBe(461.8);
     expectLinesSumToTotal(bill);
   });
 });

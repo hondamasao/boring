@@ -15,10 +15,12 @@
       "default": "./dist/testing/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "build": "tsc -b",
+    "typecheck": "tsc -b"
   },
   "dependencies": {
     "zod": "^3.25.76"

@@ -8,8 +8,8 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "pnpm -r run build",
-    "typecheck": "pnpm -r run typecheck",
+    "build": "tsc -b packages/tariff-schema packages/rating-engine",
+    "typecheck": "tsc -b packages/tariff-schema packages/rating-engine",
     "test": "vitest run",
     "test:watch": "vitest",
     "check": "pnpm run typecheck && pnpm run test"

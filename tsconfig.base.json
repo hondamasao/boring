@@ -10,6 +10,9 @@
     "noImplicitOverride": true,
     "noFallthroughCasesInSwitch": true,
 
+    // Composite so packages compose through project references rather than by
+    // mapping paths into each other's source trees.
+    "composite": true,
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,

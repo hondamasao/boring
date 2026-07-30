@@ -2,11 +2,8 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src",
-    "paths": {
-      "@boring/tariff-schema": ["../tariff-schema/src/index.ts"],
-      "@boring/tariff-schema/testing": ["../tariff-schema/src/testing/index.ts"]
-    }
+    "rootDir": "src"
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts"],
+  "references": [{ "path": "../tariff-schema" }]
 }
