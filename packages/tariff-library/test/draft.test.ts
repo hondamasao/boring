@@ -1,13 +1,17 @@
 /**
- * The draft TOU-GS-2 record MUST NOT validate yet.
+ * The draft TOU-GS-2 records MUST NOT validate yet.
  *
  * This test is the "fail loudly" mechanism for the unanswered tariff questions. It
  * breaks in both directions:
  *  - fill a pending field in, and the expected-error list goes stale;
  *  - introduce a NEW kind of error, and it is not in the allowed set.
  *
- * So the draft cannot quietly start looking usable, and it cannot quietly rot.
+ * So a draft cannot quietly start looking usable, and it cannot quietly rot.
  * See PENDING.md for what each field needs.
+ *
+ * TOU-GS-2 is published as several rate options whose charge STRUCTURE differs,
+ * not merely their rates (Option D has time-related demand, Option E does not),
+ * so each option is its own draft record. Both are checked here.
  */
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
@@ -16,7 +20,6 @@ import { describe, expect, it } from 'vitest';
 import { Tariff } from '@boring/tariff-schema';
 
 const tariffsRoot = fileURLToPath(new URL('../tariffs', import.meta.url));
-const draftPath = join(tariffsRoot, 'sce/tou-gs-2/DRAFT-unverified.json');
 
 /**
  * Top-level paths that are legitimately unpopulated. Every entry corresponds to a
@@ -25,7 +28,6 @@ const draftPath = join(tariffsRoot, 'sce/tou-gs-2/DRAFT-unverified.json');
  */
 const PENDING_PATHS = new Set([
   'seasons',
-  'touPeriods',
   'touRules',
   'holidayTreatment',
   'energyCharges',
@@ -37,6 +39,15 @@ const PENDING_PATHS = new Set([
   'provenance',
 ]);
 
+function jsonFiles(dir: string): string[] {
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) return jsonFiles(path);
+    return entry.name.endsWith('.json') ? [path] : [];
+  });
+}
+
 function issuesFor(path: string): { path: string; message: string }[] {
   const result = Tariff.safeParse(JSON.parse(readFileSync(path, 'utf8')));
   if (result.success) return [];
@@ -46,16 +57,25 @@ function issuesFor(path: string): { path: string; message: string }[] {
   }));
 }
 
-describe('the TOU-GS-2 draft', () => {
-  it('exists', () => {
-    expect(existsSync(draftPath)).toBe(true);
-  });
+const draftPaths = jsonFiles(tariffsRoot).filter((path) => path.includes('DRAFT-'));
 
+describe('the set of draft records', () => {
+  it('has one draft per TOU-GS-2 option targeted for v1', () => {
+    expect(draftPaths.sort()).toEqual(
+      [
+        join(tariffsRoot, 'sce/tou-gs-2/option-d/DRAFT-unverified.json'),
+        join(tariffsRoot, 'sce/tou-gs-2/option-e/DRAFT-unverified.json'),
+      ].sort(),
+    );
+  });
+});
+
+describe.each(draftPaths)('%s', (draftPath) => {
   it('does NOT validate, so it cannot be mistaken for a usable record', () => {
     const issues = issuesFor(draftPath);
     expect(
       issues.length,
-      'the draft now validates — if the sheet has been read, move it to a real filename, update PENDING.md, and delete this test',
+      'this draft now validates — if the sheet has been read, move it to a real filename, update PENDING.md, and delete this case',
     ).toBeGreaterThan(0);
   });
 
@@ -75,9 +95,17 @@ describe('the TOU-GS-2 draft', () => {
     ).toEqual([]);
   });
 
+  it('has touPeriods filled in, since the three periods are confirmed structural fact', () => {
+    // Summer On-Peak / winter Mid-Peak are named directly in SCE's rate summary
+    // description of the TRD charge, which implies the third, Off-Peak, by
+    // complement. Naming a period is not the same as pricing it, so this is safe
+    // to commit ahead of the full TOU table.
+    const parsed = JSON.parse(readFileSync(draftPath, 'utf8')) as { touPeriods: { id: string }[] };
+    expect(parsed.touPeriods.map((p) => p.id).sort()).toEqual(['mid-peak', 'off-peak', 'on-peak']);
+  });
+
   it('contains no invented rates that could be shipped by accident', () => {
-    const raw = readFileSync(draftPath, 'utf8');
-    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    const parsed = JSON.parse(readFileSync(draftPath, 'utf8')) as Record<string, unknown>;
 
     // Every priced collection is empty, so there is no placeholder number anywhere
     // in the file to forget to remove.
@@ -93,25 +121,29 @@ describe('the TOU-GS-2 draft', () => {
     expect(parsed['powerFactorAdjustment']).toBeNull();
   });
 
-  it('claims no ratchet, which is a statement about the sheet and still unverified', () => {
-    // PENDING.md records that sce.com returned 403 so the primary source could not
-    // be checked. The machinery is tested against a synthetic tariff either way.
+  it('claims no ratchet, which is a statement about the sheet, corroborated but not primary-verified', () => {
+    // Two secondary sources now describe the facilities charge with no ratchet
+    // language. That is not the tariff sheet PDF, so PENDING.md tracks it as
+    // corroborated rather than verified. The machinery is tested either way
+    // against a synthetic tariff.
     const parsed = JSON.parse(readFileSync(draftPath, 'utf8')) as Record<string, unknown>;
     expect(parsed['ratchets']).toEqual([]);
-    expect(readFileSync(join(tariffsRoot, '../PENDING.md'), 'utf8')).toContain('ratchet question');
+  });
+
+  it('has an optionCode, since which option is no longer an open question', () => {
+    const parsed = JSON.parse(readFileSync(draftPath, 'utf8')) as { optionCode: unknown };
+    expect(typeof parsed.optionCode).toBe('string');
+    expect(parsed.optionCode).not.toBeNull();
   });
 });
 
-describe('every non-draft tariff record', () => {
-  function jsonFiles(dir: string): string[] {
-    if (!existsSync(dir)) return [];
-    return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-      const path = join(dir, entry.name);
-      if (entry.isDirectory()) return jsonFiles(path);
-      return entry.name.endsWith('.json') ? [path] : [];
-    });
-  }
+it('PENDING.md documents the ratchet corroboration and the primary-source workflow', () => {
+  const pending = readFileSync(join(tariffsRoot, '../PENDING.md'), 'utf8');
+  expect(pending).toContain('corroborated');
+  expect(pending.toLowerCase()).toContain('fixtures/tariff-sheets');
+});
 
+describe('every non-draft tariff record', () => {
   const records = jsonFiles(tariffsRoot).filter((path) => !path.includes('DRAFT-'));
 
   it('validates, once there are any', () => {
