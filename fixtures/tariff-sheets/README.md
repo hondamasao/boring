@@ -17,3 +17,16 @@ Naming: `<schedule>-<option-or-variant>-<sheet-revision-or-date>.pdf`, e.g.
 `tou-gs-2-option-e-2026-01.pdf`. A tariff record's `provenance.sourceUrl` should
 point at the page this PDF was downloaded from, and `provenance.sheetRevision`
 should quote the sheet's own "Cal. PUC Sheet No." line.
+
+## Current contents
+
+- `ELECTRIC_SCHEDULES_TOU-GS-2.pdf` — 21 pages, transcribed into
+  `packages/tariff-library/tariffs/sce/tou-gs-2/option-d/2026-06-01.json` and
+  `.../option-e/2026-06-01.json`. Every field in those records cites its exact
+  sheet number and row from this PDF; see
+  `packages/tariff-library/PENDING.md` for what's verified, what needs your
+  confirmation on ambiguous wording, and what's still genuinely open.
+- `ELECTRIC_SCHEDULES_GS-2.pdf`, `ELECTRIC_SCHEDULES_TOU-GS-3.pdf` — uploaded
+  alongside TOU-GS-2 but not yet transcribed; kept here for when a real bill
+  turns out to need one of them (TOU-GS-3 is the schedule a TOU-GS-2 customer
+  who crosses 200 kW is transferred to).

@@ -1,0 +1,14 @@
+{
+  "utility": "SCE",
+  "source": "SCE Schedule TOU-GS-2, Sheet 8, Special Condition 1 (CPP subsection): holiday list and Sunday-shift rule. Verbatim: \"Holidays are New Year's Day (January 1), Presidents' Day (third Monday in February), Memorial Day (last Monday in May), Independence Day (July 4), Labor Day (first Monday in September), Veterans Day (November 11), Thanksgiving Day (fourth Thursday in November), and Christmas (December 25). When any holiday listed above falls on Sunday, the following Monday will be recognized as a holiday. No change will be made for holidays falling on Saturday.\" PDF: fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf. Dates below computed for calendar year 2026 by applying that rule; no 2026 holiday falls on a Sunday, so every observed date below equals its fixed/nth-weekday date, INCLUDING Independence Day, which falls on a Saturday in 2026 and is therefore NOT shifted to Friday.",
+  "observedDates": [
+    "2026-01-01",
+    "2026-02-16",
+    "2026-05-25",
+    "2026-07-04",
+    "2026-09-07",
+    "2026-11-11",
+    "2026-11-26",
+    "2026-12-25"
+  ]
+}

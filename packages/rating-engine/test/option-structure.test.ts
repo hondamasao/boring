@@ -3,18 +3,21 @@
  * load profile, must produce DIFFERENT bills because they carry different demand
  * charge families.
  *
- * This mirrors the real SCE TOU-GS-2 split: Option D carries both
- * facilities-related demand (FRD) and time-related demand (TRD); Option E carries
- * FRD only. A customer whose big draw happens at 3 a.m. — off-peak, so it never
- * touches TRD — still pays for it through FRD on both options, but only Option D
- * also charges for their (much smaller) 4-9pm weekday demand. If this distinction
- * is not tested, the schema's two-demand-family split has no product-level proof
- * it does what it's for.
+ * This was originally written from a secondary-source description ("Option D has
+ * FRD + TRD, Option E has FRD only"), before the real tariff sheet was read. The
+ * sheet has since been transcribed (packages/tariff-library/tariffs/sce/tou-gs-2/)
+ * and the real picture is more precise: Option E's DELIVERY-side TRD rate is
+ * $0.00 (so no delivery TRD line), but a NONZERO GENERATION-side TRD rate still
+ * applies for Bundled Service Customers. See
+ * packages/tariff-library/test/rate-real-records.test.ts for that corrected,
+ * primary-source-verified distinction rated against the real records.
  *
- * The synthetic tariff here is shaped like Option D / Option E structurally (FRD
- * everywhere, TRD only on Option D, same energy charges and fixed charges
- * otherwise) — it is not a transcription of the real records, which are still
- * pending real rates (see packages/tariff-library/PENDING.md).
+ * This file is kept as-is: it is a general test of the ENGINE mechanic (a
+ * facilities-only demand structure vs. a facilities+time-related one), not a
+ * transcription, and that mechanic is exactly what the real Option E's
+ * delivery-vs-generation split also exercises. The synthetic tariff here remains
+ * intentionally not a transcription of the real records — see
+ * packages/tariff-schema/src/testing/index.ts.
  */
 import { describe, expect, it } from 'vitest';
 import { rate } from '@boring/rating-engine';
