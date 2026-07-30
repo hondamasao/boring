@@ -1,0 +1,170 @@
+{
+  "schemaVersion": "1.0.0",
+  "id": "synthetic-gs2-like-2026-06-01",
+  "utility": "SCE",
+  "scheduleCode": "SYNTHETIC-GS-2-LIKE",
+  "optionCode": "SYN",
+  "title": "SYNTHETIC schedule shaped like a facilities-only TOU-GS-2 option — NOT A REAL TARIFF",
+  "timezone": "America/Los_Angeles",
+  "notes": "SYNTHETIC. Every rate in this file is invented, chosen so a bill can be computed by hand. The STRUCTURE mirrors a facilities-only TOU-GS-2 option (a 4pm-9pm summer peak, facilities-related demand with no time-related demand, a per-day customer charge, a per-kWh public purpose rider and a percent-of-subtotal tax). The NUMBERS are not SCE's. Do not copy any rate out of this file into packages/tariff-library.",
+  "provenance": {
+    "sourceUrl": "https://example.invalid/synthetic-tariff/gs2-like",
+    "sheetRevision": "SYNTHETIC-000-E",
+    "effectiveDate": "2026-06-01",
+    "supersededDate": null,
+    "verifiedAt": "2026-06-01T00:00:00Z",
+    "verifiedBy": "fixture generator (synthetic)",
+    "transcriptionNotes": "Not transcribed from any tariff sheet. Exists so the fixture harness is runnable before real bills arrive."
+  },
+  "eligibility": {
+    "voltageLevels": ["secondary"],
+    "customerClasses": ["general-service"],
+    "demandRules": [],
+    "notes": "SYNTHETIC. Left empty so this fixture exercises rating rather than eligibility; eligibility has its own tests."
+  },
+  "demandMeasurement": {
+    "windowMinutes": 15,
+    "citation": "SYNTHETIC — 15-minute window, matching SCE's definition of maximum demand as the maximum average kW during any 15-minute metered interval"
+  },
+  "seasons": [
+    {
+      "id": "summer",
+      "label": "Summer",
+      "start": { "month": 6, "day": 1 },
+      "end": { "month": 9, "day": 30 },
+      "citation": "SYNTHETIC"
+    },
+    {
+      "id": "winter",
+      "label": "Winter",
+      "start": { "month": 10, "day": 1 },
+      "end": { "month": 5, "day": 31 },
+      "citation": "SYNTHETIC"
+    }
+  ],
+  "touPeriods": [
+    { "id": "on-peak", "label": "On-Peak", "rank": 0 },
+    { "id": "mid-peak", "label": "Mid-Peak", "rank": 1 },
+    { "id": "off-peak", "label": "Off-Peak", "rank": 2 }
+  ],
+  "touRules": [
+    { "seasonId": "summer", "dayTypes": ["mon", "tue", "wed", "thu", "fri"], "hours": { "startHour": 0, "endHour": 16 }, "periodId": "off-peak" },
+    { "seasonId": "summer", "dayTypes": ["mon", "tue", "wed", "thu", "fri"], "hours": { "startHour": 16, "endHour": 21 }, "periodId": "on-peak" },
+    { "seasonId": "summer", "dayTypes": ["mon", "tue", "wed", "thu", "fri"], "hours": { "startHour": 21, "endHour": 24 }, "periodId": "off-peak" },
+    { "seasonId": "summer", "dayTypes": ["sat", "sun"], "hours": { "startHour": 0, "endHour": 16 }, "periodId": "off-peak" },
+    { "seasonId": "summer", "dayTypes": ["sat", "sun"], "hours": { "startHour": 16, "endHour": 21 }, "periodId": "mid-peak" },
+    { "seasonId": "summer", "dayTypes": ["sat", "sun"], "hours": { "startHour": 21, "endHour": 24 }, "periodId": "off-peak" },
+    { "seasonId": "winter", "dayTypes": ["mon", "tue", "wed", "thu", "fri"], "hours": { "startHour": 0, "endHour": 16 }, "periodId": "off-peak" },
+    { "seasonId": "winter", "dayTypes": ["mon", "tue", "wed", "thu", "fri"], "hours": { "startHour": 16, "endHour": 21 }, "periodId": "mid-peak" },
+    { "seasonId": "winter", "dayTypes": ["mon", "tue", "wed", "thu", "fri"], "hours": { "startHour": 21, "endHour": 24 }, "periodId": "off-peak" },
+    { "seasonId": "winter", "dayTypes": ["sat", "sun"], "hours": { "startHour": 0, "endHour": 24 }, "periodId": "off-peak" }
+  ],
+  "holidayTreatment": {
+    "mapsToDayType": "sun",
+    "citation": "SYNTHETIC — holidays rated on the Sunday schedule, so a summer holiday is mid-peak rather than on-peak. This is one of the two readings of a holiday clause; the real reading for TOU-GS-2 is unverified."
+  },
+  "energyCharges": [
+    {
+      "id": "energy-summer-on-peak",
+      "label": "Summer On-Peak Energy",
+      "seasonId": "summer",
+      "periodId": "on-peak",
+      "component": "delivery",
+      "pricing": { "kind": "flat", "ratePerKwh": 0.32 },
+      "citation": "SYNTHETIC"
+    },
+    {
+      "id": "energy-summer-mid-peak",
+      "label": "Summer Mid-Peak Energy",
+      "seasonId": "summer",
+      "periodId": "mid-peak",
+      "component": "delivery",
+      "pricing": { "kind": "flat", "ratePerKwh": 0.22 },
+      "citation": "SYNTHETIC"
+    },
+    {
+      "id": "energy-summer-off-peak",
+      "label": "Summer Off-Peak Energy",
+      "seasonId": "summer",
+      "periodId": "off-peak",
+      "component": "delivery",
+      "pricing": { "kind": "flat", "ratePerKwh": 0.12 },
+      "citation": "SYNTHETIC"
+    },
+    {
+      "id": "energy-winter-mid-peak",
+      "label": "Winter Mid-Peak Energy",
+      "seasonId": "winter",
+      "periodId": "mid-peak",
+      "component": "delivery",
+      "pricing": { "kind": "flat", "ratePerKwh": 0.16 },
+      "citation": "SYNTHETIC"
+    },
+    {
+      "id": "energy-winter-off-peak",
+      "label": "Winter Off-Peak Energy",
+      "seasonId": "winter",
+      "periodId": "off-peak",
+      "component": "delivery",
+      "pricing": { "kind": "flat", "ratePerKwh": 0.1 },
+      "citation": "SYNTHETIC"
+    }
+  ],
+  "demandCharges": {
+    "facilities": [
+      {
+        "kind": "facilities",
+        "id": "facilities-demand",
+        "label": "Facilities-Related Demand",
+        "seasonId": null,
+        "component": "delivery",
+        "ratePerKw": 18.5,
+        "measuredOver": "billing-period",
+        "citation": "SYNTHETIC — maximum kW at any time in the billing period, all year"
+      }
+    ],
+    "timeRelated": []
+  },
+  "ratchets": [],
+  "powerFactorAdjustment": null,
+  "fixedCharges": {
+    "customerCharge": {
+      "id": "customer-charge",
+      "label": "Customer Charge",
+      "basis": "per-day",
+      "amount": 1.2,
+      "component": "delivery",
+      "citation": "SYNTHETIC"
+    },
+    "meterCharge": null,
+    "dailyMinimumCharge": null
+  },
+  "riders": [
+    {
+      "basis": "per-kwh",
+      "id": "public-purpose-programs",
+      "label": "Public Purpose Programs Charge",
+      "component": "public-purpose",
+      "ratePerKwh": 0.015,
+      "scope": { "seasonIds": null, "periodIds": null },
+      "citation": "SYNTHETIC"
+    },
+    {
+      "basis": "percent-of-subtotal",
+      "id": "utility-users-tax",
+      "label": "Utility Users Tax",
+      "component": "taxes-and-fees",
+      "percent": 0.08,
+      "stage": 5,
+      "base": {
+        "includeStages": [0, 1, 2, 3, 4],
+        "chargeTypes": null,
+        "components": null,
+        "excludeComponents": ["generation"]
+      },
+      "citation": "SYNTHETIC — 8% of everything through stage 4 except generation. The real base for a local utility users' tax is unverified."
+    }
+  ],
+  "minimumBill": null,
+  "rounding": { "lineItemDecimals": 2, "mode": "half-up" }
+}

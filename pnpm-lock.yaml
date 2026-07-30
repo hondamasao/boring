@@ -18,6 +18,18 @@ importers:
         specifier: ^3.2.7
         version: 3.2.7(@types/node@22.20.1)
 
+  packages/fixture-harness:
+    dependencies:
+      '@boring/rating-engine':
+        specifier: workspace:*
+        version: link:../rating-engine
+      '@boring/tariff-schema':
+        specifier: workspace:*
+        version: link:../tariff-schema
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
+
   packages/rating-engine:
     dependencies:
       '@boring/tariff-schema':
@@ -33,6 +45,12 @@ importers:
       '@types/luxon':
         specifier: ^3.7.1
         version: 3.7.2
+
+  packages/tariff-library:
+    devDependencies:
+      '@boring/tariff-schema':
+        specifier: workspace:*
+        version: link:../tariff-schema
 
   packages/tariff-schema:
     dependencies:

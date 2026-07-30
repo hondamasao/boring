@@ -1,0 +1,13 @@
+{
+  "name": "@boring/tariff-library",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Versioned SCE tariff records as JSON, with provenance. Data only — no code.",
+  "scripts": {
+    "typecheck": "echo 'no TypeScript sources; records are validated by test/draft.test.ts' && exit 0"
+  },
+  "devDependencies": {
+    "@boring/tariff-schema": "workspace:*"
+  }
+}
