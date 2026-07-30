@@ -1,0 +1,12 @@
+packages:
+  - 'packages/*'
+
+# Phase 1 is tariff-schema + rating-engine only.
+#
+# Reserved for later phases — deliberately NOT created yet:
+#   apps/web              Next.js app — build LAST (CLAUDE.md: no web app work
+#                         until the rating engine passes its golden tests)
+#   packages/extraction   vision -> schema; the ONLY package allowed to call an LLM
+#   packages/greenbutton  Green Button CSV + ESPI XML parsers
+onlyBuiltDependencies:
+  - esbuild
