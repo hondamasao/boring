@@ -1,0 +1,14 @@
+{
+  "utility": "SCE",
+  "source": "SYNTHETIC — the dates below are plausible observed dates for 2026, NOT transcribed from SCE's Preliminary Statement. A real calendar must be verified against the tariff's own holiday list (SCE's excludes some federal holidays) and must record the OBSERVED date, since a holiday falling on a weekend may be observed on an adjacent weekday.",
+  "observedDates": [
+    "2026-01-01",
+    "2026-02-16",
+    "2026-05-25",
+    "2026-07-03",
+    "2026-09-07",
+    "2026-11-11",
+    "2026-11-26",
+    "2026-12-25"
+  ]
+}

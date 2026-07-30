@@ -1,0 +1,97 @@
+{
+  "fixtureSchemaVersion": "1.0.0",
+  "synthetic": true,
+  "syntheticNotes": "SYNTHETIC — NOT A REAL BILL. Exists so the fixture harness is runnable before real bills arrive. Delete or ignore it once real fixtures land.\n\nEvery number below was computed BY HAND from fixtures/tariffs/synthetic-gs2-like-2026-06-01.json, not read off the engine — a fixture generated from the engine would only prove the engine equals itself.\n\nDerivation. July 2026 has 31 days, no DST transition, so 31 x 96 = 2976 quarter-hours. The load is flat at 2 kWh per quarter-hour, hence 5952 kWh and a constant 8 kW.\n\nJuly 1 2026 is a Wednesday, giving 23 weekdays and 8 weekend days. July 3 is the observed Independence Day (July 4 falls on a Saturday) and the tariff rates holidays on the Sunday schedule, so it moves from weekday to weekend treatment: 22 weekday-treated days and 9 weekend-treated days.\n\n  on-peak   22 d x 5 h x 4 x 2 kWh =  880 kWh @ 0.32 =  281.60\n  mid-peak   9 d x 5 h x 4 x 2 kWh =  360 kWh @ 0.22 =   79.20\n  off-peak  5952 - 880 - 360       = 4712 kWh @ 0.12 =  565.44\n  facilities demand   2 kWh / 0.25 h = 8 kW   @ 18.50 = 148.00\n  customer charge                     31 days @  1.20 =  37.20\n  public purpose                    5952 kWh @ 0.015 =   89.28\n                                     stage 0-4 subtotal 1200.72\n  utility users tax                  8% of 1200.72   =   96.06\n                                                total   1296.78",
+  "id": "synthetic-example-001",
+  "label": "Synthetic July 2026 bill, flat 8 kW load, facilities-only schedule",
+  "source": {
+    "utility": "SCE",
+    "accountRef": null,
+    "transcribedBy": "synthetic fixture, hand-computed",
+    "transcribedAt": "2026-07-30T00:00:00Z",
+    "billPdfRef": null,
+    "notes": "There is no bill PDF because there is no bill. A real fixture must name the scan it was transcribed from."
+  },
+  "tariffRef": "tariffs/synthetic-gs2-like-2026-06-01.json",
+  "tariffId": "synthetic-gs2-like-2026-06-01",
+  "intervalsRef": "intervals/synthetic-example-001.json",
+  "holidayCalendarRef": "holidays/synthetic-sce-2026.json",
+  "billingPeriod": {
+    "start": "2026-07-01",
+    "end": "2026-08-01",
+    "timezone": "America/Los_Angeles",
+    "meterCount": 1
+  },
+  "expected": {
+    "total": 1296.78,
+    "totalKwh": 5952,
+    "reportedDemandsKw": {
+      "facilities-demand": 8
+    },
+    "lines": [
+      {
+        "description": "Summer On-Peak Energy",
+        "chargeType": "energy",
+        "sourceId": "energy-summer-on-peak",
+        "quantity": 880,
+        "unit": "kWh",
+        "rate": 0.32,
+        "amount": 281.6
+      },
+      {
+        "description": "Summer Mid-Peak Energy",
+        "chargeType": "energy",
+        "sourceId": "energy-summer-mid-peak",
+        "quantity": 360,
+        "unit": "kWh",
+        "rate": 0.22,
+        "amount": 79.2
+      },
+      {
+        "description": "Summer Off-Peak Energy",
+        "chargeType": "energy",
+        "sourceId": "energy-summer-off-peak",
+        "quantity": 4712,
+        "unit": "kWh",
+        "rate": 0.12,
+        "amount": 565.44
+      },
+      {
+        "description": "Facilities-Related Demand",
+        "chargeType": "facilities-demand",
+        "sourceId": "facilities-demand",
+        "quantity": 8,
+        "unit": "kW",
+        "rate": 18.5,
+        "amount": 148.0
+      },
+      {
+        "description": "Customer Charge",
+        "chargeType": "customer-charge",
+        "sourceId": "customer-charge",
+        "quantity": 31,
+        "unit": "days",
+        "rate": 1.2,
+        "amount": 37.2
+      },
+      {
+        "description": "Public Purpose Programs Charge",
+        "chargeType": "rider",
+        "sourceId": "public-purpose-programs",
+        "quantity": 5952,
+        "unit": "kWh",
+        "rate": 0.015,
+        "amount": 89.28
+      },
+      {
+        "description": "Utility Users Tax",
+        "chargeType": "rider",
+        "sourceId": "utility-users-tax",
+        "quantity": 1200.72,
+        "unit": "USD",
+        "rate": 0.08,
+        "amount": 96.06
+      }
+    ]
+  }
+}
