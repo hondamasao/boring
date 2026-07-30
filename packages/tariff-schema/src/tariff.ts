@@ -314,6 +314,9 @@ export const Tariff = TariffShape.superRefine((tariff, ctx) => {
 
 export type Tariff = z.infer<typeof Tariff>;
 
+/** Accepted input shape, where fields with defaults may be omitted. */
+export type TariffInput = z.input<typeof Tariff>;
+
 /** Charge types a percent rider base may name. Re-exported for JSON authors. */
 export const PERCENT_BASE_CHARGE_TYPES = ChargeType.options;
 

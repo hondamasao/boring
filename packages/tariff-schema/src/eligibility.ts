@@ -35,13 +35,23 @@ export const EligibilityRule = z.discriminatedUnion('kind', [
       thresholdKw: NonNegativeRate,
       monthCount: z.number().int().positive(),
       windowMonths: z.number().int().positive().max(120),
+      /**
+       * Whether the month being billed counts toward the window.
+       *
+       * "the preceding twelve months" can be read either way, and the two
+       * readings disagree for a customer who has just crossed the threshold —
+       * exactly the customer a schedule recommendation is about. Required, with
+       * no default, so the answer comes off the sheet rather than from here.
+       */
+      windowIncludesCurrentMonth: z.boolean(),
       transferTo: z.string().min(1),
       citation: Citation,
     })
     .strict(),
 
   /** "at or below <threshold> kW for <monthCount> consecutive months", counted
-   * back from the current billing month. */
+   * back from the anchor month. Every month in the run must have data; a gap
+   * leaves the rule unevaluated rather than quietly satisfied. */
   z
     .object({
       kind: z.literal('demand-at-or-below-threshold-for-n-consecutive-months'),
@@ -49,6 +59,8 @@ export const EligibilityRule = z.discriminatedUnion('kind', [
       label: z.string().min(1),
       thresholdKw: NonNegativeRate,
       monthCount: z.number().int().positive().max(120),
+      /** See the note on the rule above. */
+      windowIncludesCurrentMonth: z.boolean(),
       transferTo: z.string().min(1),
       citation: Citation,
     })
