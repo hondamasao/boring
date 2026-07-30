@@ -1,101 +1,144 @@
-# TOU-GS-2 — fields still needed from the tariff sheet
+# TOU-GS-2 — status
 
-`tariffs/sce/tou-gs-2/DRAFT-unverified.json` **does not validate**, on purpose. It
-is a skeleton with every field I could fill from structure alone, and `null` where
-a value would have to be guessed. `test/draft.test.ts` asserts that it still fails
-and that its errors are exactly the ones listed here — so filling a field in makes
-that test fail with "PENDING is stale", and adding a *new* kind of error also
-fails. It cannot rot quietly in either direction.
+`tariffs/sce/tou-gs-2/option-d/2026-06-01.json` and `.../option-e/2026-06-01.json`
+are now **fully transcribed from the primary source**:
+`fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf` (21 pages, downloaded by
+the user, committed to the repo — no more `sce.com` fetch attempts, ever).
 
-Nothing in the draft is a placeholder rate. There are no invented numbers to
-forget to remove.
+Both records **validate** against the schema and **rate real load profiles
+without throwing** (`test/rate-real-records.test.ts`). They are **not yet signed
+off by a human**: `provenance.verifiedBy` on both says `PENDING HUMAN REVIEW` —
+every numeric field cites its exact sheet and row so a cross-check is fast, but
+nobody has done it yet. `test/draft.test.ts` prints which records are in this
+state on every run so a green suite can't be mistaken for "ready to bill a real
+customer."
 
-## Blocking — the engine cannot rate TOU-GS-2 until these are read off the sheet
+## Two things this reading corrected
 
-| # | Field | What I need |
+**1. Option E is not "FRD only."** Its delivery-side time-related demand rate is
+$0.00/kW (so no delivery TRD line is billed), but a **nonzero generation-side**
+TRD rate still applies for Bundled Service Customers: **$5.65/kW** summer
+on-peak, **$2.18/kW** winter mid-peak (Sheet 5 Rates table, UG column). Earlier
+framing — mine, from a secondary source, and repeated in the previous version of
+this file and in `option-structure.test.ts`'s docstring — said Option E had no
+TRD at all. That was wrong. Both are updated.
+
+**2. The ratchet question is now fully verified, not merely corroborated.** I
+searched the whole 21-page document case-insensitively for "minimum," "ratchet,"
+and "power factor." **None appear** in any billing-relevant context. The one
+"prior billing month's Maximum Demand" reference in the document (Sheet 15–16,
+Special Condition 14) is unrelated to billing — it is a 5%-of-prior-peak
+allowance and a 20%-of-prior-peak compliance threshold for **rotating-outage load
+reduction** on sub-transmission customers, a demand-response-adjacent program
+out of scope per CLAUDE.md. So: **TOU-GS-2 has no demand ratchet, no minimum
+bill, and no power-factor adjustment.** All three are `[]`/`null` on both
+records, verified rather than corroborated.
+
+## Verified from the primary source
+
+| Field | Value | Citation |
 |---|---|---|
-| 1 | `seasons[].start/end` | Confirm summer is June 1 – September 30 and winter October 1 – May 31 for this schedule and revision. |
-| 2 | `touRules` | The full TOU table: hour boundaries per season and day type. I have "4 p.m. – 9 p.m. summer weekdays excluding holidays" from SCE's rate summary, but not the winter table, not the weekend treatment, and not whether there is a winter super-off-peak. |
-| 3 | `holidayTreatment.mapsToDayType` | Does a holiday take the **Sunday schedule** (still mid-peak in summer) or become **off-peak around the clock**? Both are implemented; the field decides. Also: the tariff's holiday **list** — SCE's excludes some federal holidays — goes into a calendar file under `fixtures/holidays/`, not here. |
-| 4 | `energyCharges[].pricing.ratePerKwh` | Rates per season × period × component. |
-| 5 | `demandCharges.facilities[].ratePerKw` | The facilities-related rate. |
-| 6 | `demandCharges.facilities[].measuredOver` | For a billing period straddling June 1: **one** maximum for the period, or a **separate** maximum per season segment at each season's rate? Both implemented. |
-| 7 | `demandCharges.timeRelated` | Does the option you are targeting have time-related demand at all? Per SCE's rate summary, Option E has facilities-related demand and **no** time-related demand — see the note on options below. If it does, one entry per season × period with its rate. |
-| 8 | `fixedCharges.customerCharge` | Amount and basis — per month, or per day, or per meter per day. |
-| 9 | `minimumBill` | Which of the three forms: a per-day floor, a per-month floor, or "the customer charge plus the facilities-related demand charge" (`charge-floor`)? And is the comparison made **before or after** taxes and per-kWh riders (`comparisonScope.includeStages`)? |
-| 10 | `riders` | Which riders appear, each with its basis. For the percent-of-subtotal ones I need the **base**: which stages it taxes, and whether it includes generation (it must not, for a CCA customer) and the minimum-bill make-up amount. |
-| 11 | `eligibility.demandRules[].windowIncludesCurrentMonth` | Does "any three months of the preceding twelve" **count the month being billed**? The two readings disagree for exactly the customer a recommendation is about — one who has just crossed 200 kW. |
-| 12 | `provenance` | Sheet number, effective date, and the direct PDF URL. Put the PDF in `fixtures/tariff-sheets/`. |
+| Seasons | Summer Jun 1 – Sep 30; Winter Oct 1 – May 31 | Sheet 9, Special Condition 1 (continued) |
+| TOU table | 8 rules; see records — On-Peak only exists summer weekdays 4-9pm; Mid-Peak is 4-9pm every other day/season; Off-Peak and Super-Off-Peak fill the rest, winter only has a Super-Off-Peak (8am-4pm) | Sheet 8, Special Condition 1 table |
+| Holidays | 8 fixed/nth-weekday holidays, Sunday→Monday shift, **no shift for Saturday** | Sheet 8/20; computed for 2026 in `fixtures/holidays/sce-2026.json` |
+| Holiday treatment | Holiday takes the weekend schedule (Sat and Sun are identical on this tariff, so which one `mapsToDayType` points at doesn't matter) | Sheet 8 table: one combined "Weekends and Holidays" column |
+| Demand window | 15 min, 5 min for intermittent/violent-fluctuation load (account-level, `ServiceAttributes.demandWindowMinutesOverride`) | Sheet 11, Special Condition 5 |
+| `measuredOver` | `billing-period` for both FRD and TRD — Special Condition 6 says FRD is measured "for the monthly billing period" and TRD "for each of the TOU Periods," neither mentions per-season-segment splitting | Sheet 11, Special Condition 6 |
+| Energy, demand, customer charge rates | Transcribed exactly; see the records | Sheet 4 (Option D), Sheet 5 (Option E) |
+| Two riders schedule-wide | Fixed Recovery Charge ($0.00483/kWh, wildfire recovery bonds) and MCAM Charge ($0.00178/kWh) | Sheet 4/5 Rates + Sheet 21 (FRC), footnote 12 (MCAM) |
+| No ratchet / no minimum bill / no power factor clause | Confirmed absent, whole-document search | throughout |
+| Eligibility thresholds | 20 kW / 200 kW, transfer targets TOU-GS-1 / TOU-GS-3 | Sheet 1, Applicability |
+| voltageLevels | Not restricted in Applicability; Rates section prices voltage discounts up to 220 kV, so all four levels are listed rather than assumed secondary-only | Sheet 1 (silent on voltage), Sheet 4/5 (voltage discount rows) |
 
-## Verified and settled
+## Still needs your confirmation — interpretation, not missing data
 
-- **Demand measurement window.** 15 minutes, per SCE's definition of maximum
-  demand as the maximum average kW during any 15-minute metered interval. The
-  5-minute case (intermittent load, or load subject to violent fluctuation) is a
-  determination about an **account**, not a property of the schedule, so it is
-  `ServiceAttributes.demandWindowMinutesOverride` rather than a second tariff
-  record per customer.
-- **Time zone.** `America/Los_Angeles`, DST-aware, all TOU logic in local clock
-  time.
-- **Tiers.** Generic block-rate tiers only; expected unused on TOU-GS-2. The
-  residential baseline credit is deliberately **not** modelled.
-- **Real-time pricing.** Out of scope for v1 and rejected by schema validation:
-  `TOU-GS-2-RTP` needs hourly market prices the engine cannot fetch.
+Both of these are read directly off Sheet 1, but the wording is genuinely
+ambiguous and I'm not willing to silently pick one reading given CLAUDE.md's
+explicit warning that this is exactly the customer a recommendation is about.
 
-## Two things I found while building this
+1. **`reached-200-kw-in-three-of-twelve`**: *"...has reached 200 kW for any three
+   months during the **preceding** 12 months..."* — I read "preceding" as
+   excluding the month being billed (`windowIncludesCurrentMonth: false`).
+2. **`at-or-below-20-kw-for-twelve-consecutive`**: *"...has registered 20 kW or
+   less for 12 consecutive months..."* — no "preceding" qualifier here, unlike
+   rule 1, so I read the just-billed month as the last of the 12
+   (`windowIncludesCurrentMonth: true`).
 
-### TOU-GS-2 is published as several rate options, and they differ structurally
+Both citations quote the exact sentence and my reasoning inline on the record
+itself (`eligibility.demandRules[].citation`). **Please confirm both readings.**
 
-Per [SCE's summary of available rates][rates], **Option E carries
-facilities-related demand charges and no time-related demand charges**. That means
-"TOU-GS-2" is not one tariff record — each option is its own record, because they
-do not merely differ in rates, they differ in which charge families exist.
+## New engine/schema gaps found while transcribing (not fixed here — this was a data task)
 
-The schema therefore has `optionCode` alongside `scheduleCode`, and the draft
-leaves it `null` pending a decision on **which option to target first**. Rating a
-customer on Option A's structure when they are on Option E would invent a demand
-charge they do not pay, or drop one they do.
+1. **Billing demand is rounded to the nearest whole kW before the rate is
+   applied.** Sheet 11, Special Condition 6: *"The Billing Demand shall be the
+   kW of Maximum Demand, determined to the nearest kW."* The engine currently
+   rounds only the resulting dollar amount to cents — it does not round
+   `billedKw` itself to an integer first. For a demand charge at, say, $23/kW,
+   a measured 47.6 kW currently bills as 47.6 × 23 = $1094.80; per the sheet it
+   should round to 48 kW first, billing $1104.00. **This is a real discrepancy
+   against real bills** and needs an engine change (tests before implementation,
+   per CLAUDE.md), not a data fill. Flagging rather than fixing since this task
+   was scoped to transcription.
+2. **A TRD row label says "Weekdays" even though the underlying TOU period
+   applies on all days.** Sheet 4's winter TRD row is titled *"Mid-peak -
+   Weekdays (4-9pm)"*, but Sheet 8's TOU table has winter Mid-Peak apply on
+   *every* day including weekends and holidays. I modeled winter TRD as applying
+   whenever the Mid-Peak period occurs (matching Special Condition 6, "for each
+   of the TOU Periods"), treating "(Weekdays)" as describing when those hours
+   fall rather than as a further restriction. **Please confirm** — if TRD really
+   is weekdays-only despite the broader period, that's a third kind of demand
+   scoping (period AND day-type together) the schema doesn't express yet and
+   would need a schema change.
+3. **Conditional/account-level charges are known but not modeled**, because each
+   needs an account attribute or eligibility flag the schema doesn't have yet:
+   - TOU Option Meter Charge (RTEM), $40.79/meter/month — needs a "customer
+     elected RTEM" flag.
+   - California Climate Credit, -$36.00/meter, April & October bills only, for
+     "Small Business Customers" (≤20 kW in ≥9 of the preceding 12 months) —
+     needs month-conditional riders, which don't exist. Sheet 13 does state its
+     position in the stage order precisely though: applied **after** city/county
+     utility users' taxes, **before** franchise fees.
+   - Single Phase Service credit, -$9.30/month — needs a phase attribute on
+     `ServiceAttributes`.
+   - Voltage discounts, 2 kV to 220 kV — every tier starts at 2 kV, so a v1
+     customer at standard secondary voltage gets $0 here regardless; likely
+     irrelevant for the target audience rather than a real gap, but flagged.
+   - CARE (32.5%) and Food Bank (20%) discounts — both need an enrollment flag.
+   - City/county utility users' tax and franchise fees are **not part of this
+     schedule at all** — confirmed absent from the document; they're
+     jurisdiction-specific and belong in a separate rider once the customer's
+     city is known.
 
-**I need to know which option.** If it is several, that is several records.
+## What's genuinely still open
 
-### The ratchet question — I could not verify it from the primary source
+- **Direct Access / CCA generation modeling.** Sheet 12 confirms Delivery is
+  always billed per this schedule; Generation for DA customers comes from
+  Schedule DA-CRS, for CCA customers from Schedule CCA-CRS. Neither is
+  transcribed. The `generation`-component lines on these records apply to
+  Bundled Service Customers only — noted in each record's `notes`.
+- **A real bill and real Green Button interval data**, to actually reconcile
+  against (CLAUDE.md invariant #2). Nothing above can be upgraded from "rates
+  without throwing" to "reproduces a real bill" without one.
+- **A human cross-check** of both records against the PDF — `verifiedBy` says so
+  explicitly on both, and will keep printing in test output until it's done.
 
-You asked me to verify whether TOU-GS-2 actually has a demand ratchet before
-assuming it does. **I could not confirm this from the tariff sheet.** `sce.com`
-returns HTTP 403 to my fetcher, so I could not retrieve
-`ELECTRIC_SCHEDULES_TOU-GS-2.pdf` or the `-RTP` variant.
+## Options excluded from v1 (unchanged from before, now confirmed present in the sheet)
 
-What I have is secondary: SCE's own rate-options summary describes the
-facilities-related charge as applying to "the highest recorded demand during each
-monthly billing period, regardless of season, day of the week, or time of day",
-with no ratchet language. That is consistent with **no ratchet**, and consistent
-with your expectation that ratchets are more common on TOU-8, standby and
-transmission-level schedules.
+- **CPP variants** (Option D-CPP, the *default* option per Sheet 1 — note this,
+  it means most real customers are NOT on plain Option D) and Option B-CPP —
+  need a critical-peak event calendar this repo doesn't have.
+- **Options B, B-CPP, R** — "Discontinued TOU Periods," closed to new
+  enrollment, kept only for grandfathered solar/NEM customers (Sheet 2). Their
+  rates are on Sheet 6-7 if a grandfathered customer's real bill ever needs one;
+  not built speculatively.
 
-That is not good enough to write down. Per CLAUDE.md the authoritative source is
-the published sheet PDF, so:
+## `fixtures/holidays/sce-2026.json`
 
-- the draft carries `"ratchets": []`, which in this schema is a **claim about the
-  sheet**, not an unimplemented feature;
-- the ratchet machinery is fully built and tested against a synthetic tariff
-  (`packages/rating-engine/test/ratchet.test.ts` — 19 cases covering the lookback
-  edge, current-month exclusion, both season scopes, and ratchets on both demand
-  families), so whichever way this lands, no engine work is needed;
-- **please confirm from the sheet you have.** If there is a ratchet, it needs a
-  percentage, a lookback length, and whether a summer peak can floor a winter
-  month.
-
-### One more, smaller
-
-`fixedCharges.dailyMinimumCharge` is for a sheet that lists an **additive**
-per-day amount. If TOU-GS-2's daily minimum is a **floor** on the bill instead, it
-belongs in `minimumBill` as `kind: "per-day"`. The two produce different bills for
-a low-usage month, so I left the slot `null` rather than pick.
-
-Also: only one power-factor method is modelled
-(`per-kvar-below-threshold`). That form is generic, not transcribed from SCE, so
-`powerFactorAdjustment` is `null`. `LoadProfile` already carries optional
-`kvarh`/`kva`, so if the sheet words its clause differently it is a new union
-member, not a breaking change.
-
-[rates]: https://www.sce.com/sites/default/files/custom-files/PDF_Files/2025_Summary_of_Available_Residential_and_Nonresidential_Rates.pdf
+Real (not synthetic) SCE holiday calendar for calendar year 2026, computed from
+the Sheet 8 rule. Worth noting: **the synthetic fixture**
+(`fixtures/holidays/synthetic-sce-2026.json`) lists July 3 as the observed
+Independence Day — that was a plausible-looking placeholder chosen before this
+PDF was read, and it's wrong for the real rule: July 4, 2026 is a **Saturday**,
+and the sheet is explicit that holidays falling on Saturday are **not** shifted.
+The synthetic fixture is explicitly synthetic and this doesn't affect any test's
+correctness, but it's worth knowing the placeholder date doesn't match reality.

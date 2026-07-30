@@ -200,6 +200,103 @@ describe('static service attributes', () => {
   });
 });
 
+describe('the ambiguous zone: contested readings of "preceding" get a warning, not a flat verdict', () => {
+  // The synthetic TOU-GS-2 eligibility rules (packages/tariff-schema/src/testing)
+  // set windowIncludesCurrentMonth: true for both history-dependent rules. These
+  // tests sit a customer exactly on the boundary where the OTHER reading
+  // (excluding the current month) would answer differently, and confirm the
+  // engine says so explicitly rather than picking one answer silently.
+
+  it('flags the 200 kW rule when 2 prior qualifying months plus a qualifying current month disagree with the other reading', () => {
+    // Chosen reading (windowIncludesCurrentMonth: true): 2 prior + this month's
+    // 240 kW = 3 qualifying months -> FIRES.
+    // Other reading (false, "preceding" excludes this month): only the 2 prior
+    // months qualify -> does NOT fire. That disagreement is the ambiguous zone.
+    const highProfile = buildProfile({ start: START, end: END, kwh: flat(60) });
+    const result = rate(
+      highProfile,
+      gs2Tariff(),
+      period(START, END),
+      emptyContext({ demandHistory: { entries: monthsBack(2, 250, '2026-06') } }),
+    );
+
+    expect(
+      result.diagnostics.eligibility.findings.some((f) => f.ruleId === 'above-200-kw-three-of-twelve'),
+    ).toBe(true);
+    expect(
+      result.warnings.some(
+        (w) => w.includes('AMBIGUOUS ZONE') && w.includes('Reached 200 kW in any three months'),
+      ),
+    ).toBe(true);
+    expect(result.warnings.some((w) => w.includes('windowIncludesCurrentMonth=true'))).toBe(true);
+    expect(result.warnings.some((w) => w.includes('the other reading would does not fire'))).toBe(true);
+  });
+
+  it('does NOT flag the 200 kW rule when both readings agree', () => {
+    // Current month is low (4 kW), so it never qualifies under either reading —
+    // both see exactly the same 2 qualifying prior months, both don't fire.
+    const result = billWith(monthsBack(2, 250, '2026-06'));
+    expect(
+      result.warnings.some((w) => w.includes('AMBIGUOUS ZONE') && w.includes('Reached 200 kW')),
+    ).toBe(false);
+  });
+
+  it('flags the 20 kW rule when the current month alone decides which reading fires', () => {
+    // 12 consecutive PRIOR months (2026-06 back through 2025-07) all at 10 kW.
+    // Chosen reading (true): window is 11 prior + current. Current is 24 kW, so
+    // NOT all <=20 -> does not fire.
+    // Other reading (false): window is the 12 STRICTLY PRECEDING months, which
+    // this history covers completely and which are all <=20 -> FIRES. The two
+    // readings disagree on whether this customer should be moved to TOU-GS-1.
+    const currentAbove20 = buildProfile({ start: START, end: END, kwh: flat(6) }); // 24 kW
+    const result = rate(
+      currentAbove20,
+      gs2Tariff(),
+      period(START, END),
+      emptyContext({ demandHistory: { entries: monthsBack(12, 10, '2026-06') } }),
+    );
+
+    expect(
+      result.diagnostics.eligibility.findings.some(
+        (f) => f.ruleId === 'at-or-below-20-kw-twelve-consecutive',
+      ),
+    ).toBe(false);
+    expect(
+      result.warnings.some(
+        (w) => w.includes('AMBIGUOUS ZONE') && w.includes('At or below 20 kW for twelve consecutive months'),
+      ),
+    ).toBe(true);
+    expect(result.warnings.some((w) => w.includes('windowIncludesCurrentMonth=true'))).toBe(true);
+    expect(result.warnings.some((w) => w.includes('the other reading would FIRES (transfer to TOU-GS-1)'))).toBe(true);
+  });
+
+  it('does NOT flag the 20 kW rule when the alternate reading has incomplete data', () => {
+    // Only 11 prior months of history, so the "exclude current month" reading
+    // (which needs 12 STRICTLY preceding months) can't be evaluated at all —
+    // an unevaluable alternate reading can't confirm a disagreement, so no
+    // ambiguous-zone warning is emitted, only the normal finding.
+    const result = billWith(monthsBack(11, 10, '2026-06'));
+    expect(
+      result.warnings.some(
+        (w) => w.includes('AMBIGUOUS ZONE') && w.includes('At or below 20 kW'),
+      ),
+    ).toBe(false);
+  });
+
+  it('says explicitly to verify against SCE directly', () => {
+    const highProfile = buildProfile({ start: START, end: END, kwh: flat(60) });
+    const result = rate(
+      highProfile,
+      gs2Tariff(),
+      period(START, END),
+      emptyContext({ demandHistory: { entries: monthsBack(2, 250, '2026-06') } }),
+    );
+    const warning = result.warnings.find((w) => w.includes('AMBIGUOUS ZONE'));
+    expect(warning).toBeDefined();
+    expect(warning).toContain('Verify against SCE directly before acting');
+  });
+});
+
 describe('eligibility never blocks a bill', () => {
   it('still returns a full itemization for an ineligible customer', () => {
     const result = billWith(monthsBack(6, 400, '2026-06'));

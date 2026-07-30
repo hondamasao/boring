@@ -48,9 +48,15 @@ importers:
 
   packages/tariff-library:
     devDependencies:
+      '@boring/rating-engine':
+        specifier: workspace:*
+        version: link:../rating-engine
       '@boring/tariff-schema':
         specifier: workspace:*
         version: link:../tariff-schema
+      luxon:
+        specifier: ^3.7.2
+        version: 3.7.2
 
   packages/tariff-schema:
     dependencies:

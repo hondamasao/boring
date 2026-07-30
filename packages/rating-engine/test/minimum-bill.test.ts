@@ -18,14 +18,20 @@ import { describeBill, expectLinesSumToTotal, only, riderLine } from './helpers/
 // Five summer weekdays at a near-idle 0.01 kWh per quarter-hour:
 //   on-peak     1.0 kWh @ 0.30 =   0.30
 //   off-peak    3.8 kWh @ 0.10 =   0.38
-//   facilities 0.04 kW  @ 20   =   0.80
-//   on-peak demand 0.04 kW @ 12 =  0.48   -> stage 0 = 1.96
-//   customer charge                       -> stage 1 = 100.00
-//                                  stages 0-3 = 101.96
+//   facilities 0.04 kW, rounds to the nearest whole kW = 0 kW @ 20 =   0.00
+//   on-peak demand 0.04 kW, rounds to 0 kW @ 12         =              0.00
+//                                                          stage 0 =   0.68
+//   customer charge                                       stage 1 = 100.00
+//                                                    stages 0-3 = 100.68
+//
+// Demand rounds to zero here on purpose — an idle account should have $0 demand
+// charges, and this is what "round to the nearest kW before billing" (Special
+// Condition 6) actually does at the low end, not just the high end tested in
+// demand-rounding.test.ts.
 const START = '2026-07-06';
 const END = '2026-07-11';
 const idle = buildProfile({ start: START, end: END, kwh: flat(0.01) });
-const BEFORE_MINIMUM = 101.96;
+const BEFORE_MINIMUM = 100.68;
 
 const cite = 'synthetic';
 const allChargeStages = [0, 1, 2, 3];
@@ -48,13 +54,13 @@ const perDay = (amountPerDay: number, includeStages = allChargeStages): MinimumB
 });
 
 describe('G23: a minimum that bites', () => {
-  // $50/day x 5 days = $250.00 floor against a $101.96 bill.
+  // $50/day x 5 days = $250.00 floor against a $100.68 bill.
   const result = bill(perDay(50));
 
   it('adds a make-up line for exactly the shortfall', () => {
     const adjustment = only(result.lines, (l) => l.chargeType === 'minimum-bill-adjustment');
     expect(adjustment.stage).toBe(STAGE.MINIMUM_BILL);
-    expect(adjustment.amount).toBe(148.04);
+    expect(adjustment.amount).toBe(149.32);
     expect(adjustment.notes?.join(' ')).toContain('250');
   });
 
@@ -62,7 +68,7 @@ describe('G23: a minimum that bites', () => {
     // The computed charges are still visible and still add up to what they were.
     expect(result.subtotals.cumulativeThroughStage['3']).toBe(BEFORE_MINIMUM);
     expect(only(result.lines, (l) => l.sourceId === 'customer-charge').amount).toBe(100);
-    expect(only(result.lines, (l) => l.sourceId === 'frd').amount).toBe(0.8);
+    expect(only(result.lines, (l) => l.sourceId === 'frd').amount).toBe(0);
   });
 
   it('totals exactly the minimum', () => {
@@ -106,8 +112,8 @@ describe('G25: whether a tax includes the make-up amount is a declared choice', 
   it('excludes the make-up amount when stage 4 is left out', () => {
     const result = bill(perDay(50), [tax([0, 1, 2, 3])]);
     expect(riderLine(result, 'uut').quantity).toBe(BEFORE_MINIMUM);
-    expect(riderLine(result, 'uut').amount).toBe(10.2);
-    expect(result.total, describeBill(result)).toBe(260.2);
+    expect(riderLine(result, 'uut').amount).toBe(10.07);
+    expect(result.total, describeBill(result)).toBe(260.07);
   });
 });
 
@@ -122,7 +128,7 @@ describe('G: per-month and per-meter forms', () => {
       citation: cite,
     };
     const result = bill(minimum, [], 3);
-    expect(only(result.lines, (l) => l.chargeType === 'minimum-bill-adjustment').amount).toBe(198.04);
+    expect(only(result.lines, (l) => l.chargeType === 'minimum-bill-adjustment').amount).toBe(199.32);
     expect(result.total).toBe(300);
   });
 
@@ -136,7 +142,7 @@ describe('G: per-month and per-meter forms', () => {
 
 describe('G: the charge-floor form', () => {
   // "minimum charge: the customer charge plus the facilities-related demand
-  // charge" -> 100.00 + 0.80 = 100.80.
+  // charge" -> 100.00 + 0.00 = 100.00 (the facilities peak rounds to 0 kW here).
   const chargeFloor = (includeStages: number[]): MinimumBill => ({
     kind: 'charge-floor',
     floorChargeIds: ['customer-charge', 'frd'],
@@ -152,11 +158,11 @@ describe('G: the charge-floor form', () => {
   });
 
   it('bites when the comparison is narrowed to the charges below the floor', () => {
-    // Comparing only stage 0 (1.96) against a 100.80 floor.
+    // Comparing only stage 0 (0.68) against a 100.00 floor.
     const result = bill(chargeFloor([0]));
     const adjustment = only(result.lines, (l) => l.chargeType === 'minimum-bill-adjustment');
-    expect(adjustment.amount).toBe(98.84);
-    expect(result.total, describeBill(result)).toBe(200.8);
+    expect(adjustment.amount).toBe(99.32);
+    expect(result.total, describeBill(result)).toBe(200);
   });
 });
 
@@ -170,9 +176,9 @@ describe('G: the comparison scope can exclude components', () => {
         excludeComponents: ['generation'],
       },
     };
-    // $21/day x 5 = $105 floor against $101.96 -> a $3.04 shortfall.
+    // $21/day x 5 = $105 floor against $100.68 -> a $4.32 shortfall.
     const result = bill(minimum);
-    expect(only(result.lines, (l) => l.chargeType === 'minimum-bill-adjustment').amount).toBe(3.04);
+    expect(only(result.lines, (l) => l.chargeType === 'minimum-bill-adjustment').amount).toBe(4.32);
     expect(result.total).toBe(105);
   });
 });

@@ -122,6 +122,16 @@ export function determineDemand(
         }
       }
 
+      // SCE Schedule TOU-GS-2, Special Condition 6: "The Billing Demand shall be
+      // the kW of Maximum Demand, determined to the nearest kW." Rounded once,
+      // here, as the final step after any ratchet floor — this is the quantity
+      // the dollar amount is computed FROM, not a rounding of the resulting
+      // amount. `measuredPeakKw` above is left unrounded: Special Condition 5
+      // defines "Maximum Demand" (the raw meter reading) with no rounding, so the
+      // audit trail keeps the true peak visible even though only the rounded
+      // figure is billed.
+      determination.billedKw = roundToNearestKw(determination.billedKw);
+
       determinations.push(determination);
     }
   }
@@ -168,4 +178,12 @@ function computeFloor(
 
   if (best === null) return null;
   return { ...best, floorKw: best.priorPeakKw * ratchet.percentOfPriorPeak };
+}
+
+/** Rounds to the nearest whole kW, half away from zero — symmetric the same way
+ * `roundToCents` is, so a rounding convention doesn't quietly differ between
+ * money and demand quantities. */
+function roundToNearestKw(kw: number): number {
+  const sign = kw < 0 ? -1 : 1;
+  return sign * Math.round(Math.abs(kw));
 }

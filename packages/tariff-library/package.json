@@ -8,6 +8,8 @@
     "typecheck": "echo 'no TypeScript sources; records are validated by test/draft.test.ts' && exit 0"
   },
   "devDependencies": {
-    "@boring/tariff-schema": "workspace:*"
+    "@boring/rating-engine": "workspace:*",
+    "@boring/tariff-schema": "workspace:*",
+    "luxon": "^3.7.2"
   }
 }
