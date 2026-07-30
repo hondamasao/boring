@@ -157,7 +157,15 @@ export const BillFixture = z
   });
 export type BillFixture = z.infer<typeof BillFixture>;
 
-/** Interval data as stored on disk, alongside the meter's own metadata. */
+/**
+ * Interval data as stored on disk, alongside the meter's own metadata.
+ *
+ * `synthetic` mirrors `BillFixture.synthetic` exactly, same reasoning: required
+ * with no default, so a fabricated load profile can never be mistaken for a real
+ * Green Button export by omission. A file generated to *look like* real usage
+ * (e.g. a modeled restaurant load) is still synthetic — synthetic describes
+ * where the numbers came from, not how plausible they look.
+ */
 export const IntervalFile = z
   .object({
     meterId: z.string().min(1).optional(),
@@ -165,6 +173,9 @@ export const IntervalFile = z
     intervalMinutes: z.number().int().positive(),
     /** How this file was produced: a Green Button export, or fabricated. */
     provenance: z.string().min(1),
+    synthetic: z.boolean(),
+    /** Required when synthetic: exactly how the numbers were generated. */
+    syntheticNotes: z.string().min(1).optional(),
     readings: z.array(
       z
         .object({
@@ -176,5 +187,21 @@ export const IntervalFile = z
         .strict(),
     ),
   })
-  .strict();
+  .strict()
+  .superRefine((file, ctx) => {
+    if (file.synthetic && file.syntheticNotes === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'a synthetic interval file must explain how its numbers were generated',
+        path: ['syntheticNotes'],
+      });
+    }
+    if (!file.synthetic && file.syntheticNotes !== undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'syntheticNotes on an interval file marked non-synthetic (a real Green Button export) is contradictory',
+        path: ['syntheticNotes'],
+      });
+    }
+  });
 export type IntervalFile = z.infer<typeof IntervalFile>;
