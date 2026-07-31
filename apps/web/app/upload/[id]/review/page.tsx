@@ -1,9 +1,15 @@
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { extractBill, ExtractionError, type ExtractedBill, type ExtractedField } from '@boring/extraction';
 import { Progress } from '../../../../components/Progress';
 import { isValidUploadId, readBillFile, readManifest } from '../../../../lib/storage';
 import { readCachedExtraction, writeCachedExtraction } from '../../../../lib/extraction-storage';
 import { confirmExtraction } from './actions';
+
+export const metadata: Metadata = {
+  title: 'Review Extracted Values',
+  robots: { index: false, follow: false },
+};
 
 type BillResult =
   | { filename: string; status: 'ok'; data: ExtractedBill }
@@ -68,7 +74,7 @@ function BillSection({ result }: { result: BillResult }) {
     return (
       <div className="card card-bad">
         <div className="card-header">
-          <h3 style={{ marginBottom: 0 }}>{displayName}</h3>
+          <h2 className="subhead" style={{ marginBottom: 0 }}>{displayName}</h2>
           <span className="stamp stamp-bad">Extraction failed</span>
         </div>
         <p className="small" style={{ fontFamily: 'var(--font-mono)' }}>
@@ -96,7 +102,7 @@ function BillSection({ result }: { result: BillResult }) {
   return (
     <div className="card">
       <div className="card-header">
-        <h3 style={{ marginBottom: 0 }}>{displayName}</h3>
+        <h2 className="subhead" style={{ marginBottom: 0 }}>{displayName}</h2>
         {lowConfidenceCount > 0 ? (
           <span className="stamp stamp-warn">
             {lowConfidenceCount} field{lowConfidenceCount === 1 ? '' : 's'} need review

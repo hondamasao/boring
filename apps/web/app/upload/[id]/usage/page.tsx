@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import type { LoadShapeEstimate } from '@boring/load-shape-estimator';
@@ -5,6 +6,11 @@ import { Progress } from '../../../../components/Progress';
 import { isValidUploadId, readManifest } from '../../../../lib/storage';
 import { readConfirmation } from '../../../../lib/extraction-storage';
 import { getOrEstimateBill, type BillEstimate } from '../../../../lib/bill-usage';
+
+export const metadata: Metadata = {
+  title: 'Estimated Usage',
+  robots: { index: false, follow: false },
+};
 
 function methodLabel(method: LoadShapeEstimate['method']): string {
   return method === 'fit-energy-and-peak' ? 'fit to both total energy and peak demand' : 'fit to total energy only';
@@ -17,7 +23,7 @@ function BillCard({ result }: { result: BillEstimate }) {
     return (
       <div className="card card-bad">
         <div className="card-header">
-          <h3 style={{ marginBottom: 0 }}>{displayName}</h3>
+          <h2 className="subhead" style={{ marginBottom: 0 }}>{displayName}</h2>
           <span className="stamp stamp-bad">Could not estimate</span>
         </div>
         <p style={{ marginBottom: 0 }}>{result.message}</p>
@@ -31,7 +37,7 @@ function BillCard({ result }: { result: BillEstimate }) {
   return (
     <div className="card">
       <div className="card-header">
-        <h3 style={{ marginBottom: 0 }}>{displayName}</h3>
+        <h2 className="subhead" style={{ marginBottom: 0 }}>{displayName}</h2>
         <span className="stamp stamp-accent">Estimated</span>
       </div>
       <div className="stack">

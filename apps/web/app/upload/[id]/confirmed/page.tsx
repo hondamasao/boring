@@ -1,8 +1,14 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Progress } from '../../../../components/Progress';
 import { isValidUploadId } from '../../../../lib/storage';
 import { readConfirmation } from '../../../../lib/extraction-storage';
+
+export const metadata: Metadata = {
+  title: 'Values Confirmed',
+  robots: { index: false, follow: false },
+};
 
 export default async function ConfirmedPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

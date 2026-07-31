@@ -1,6 +1,8 @@
+import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { IBM_Plex_Mono, Public_Sans, Source_Serif_4 } from 'next/font/google';
+import { SITE_URL } from '../lib/site';
 import './globals.css';
 
 const sourceSerif = Source_Serif_4({
@@ -24,9 +26,21 @@ const plexMono = IBM_Plex_Mono({
   display: 'swap',
 });
 
-export const metadata = {
-  title: 'Boring — SCE bill audit (beta)',
-  description: 'A free beta tool that checks whether your SCE commercial rate schedule is the cheapest one you qualify for.',
+export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: 'Boring | SCE Commercial Electricity Rate Comparison',
+    template: '%s | Boring',
+  },
+  description:
+    "A free beta tool that checks whether your SCE commercial account is on the cheapest available rate schedule.",
+  openGraph: {
+    siteName: 'Boring',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

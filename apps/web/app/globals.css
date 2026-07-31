@@ -99,6 +99,15 @@ h3 {
   font-weight: 600;
 }
 
+/* For a heading that must be an <h2> for correct document structure (no
+   skipped level) but sits inside a card or list where h2's page-section
+   size and 2.5rem top margin would look wrong. Matches h3's old visual
+   treatment exactly — semantics and appearance chosen independently. */
+.subhead {
+  font-size: 1.05rem;
+  margin-top: 0;
+}
+
 p {
   margin: 0 0 1rem;
   color: var(--ink);

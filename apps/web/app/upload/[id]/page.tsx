@@ -1,7 +1,15 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Progress } from '../../../components/Progress';
 import { isValidUploadId, readManifest } from '../../../lib/storage';
+
+// Every page under /upload/[id] holds one customer's private bill data
+// behind an unguessable link, not a login. None of it may be indexed.
+export const metadata: Metadata = {
+  title: 'Files Received',
+  robots: { index: false, follow: false },
+};
 
 export default async function UploadConfirmationPage({
   params,
@@ -27,7 +35,7 @@ export default async function UploadConfirmationPage({
       </p>
 
       <div className="card">
-        <h3>Bills</h3>
+        <h2 className="subhead">Bills</h2>
         <div className="stack">
           {manifest.bills.map((name) => (
             <div key={name} className="ledger-row">
@@ -40,7 +48,7 @@ export default async function UploadConfirmationPage({
 
         {manifest.greenButton.length > 0 ? (
           <>
-            <h3 style={{ marginTop: '1.5rem' }}>Green Button data</h3>
+            <h2 className="subhead" style={{ marginTop: '1.5rem' }}>Green Button data</h2>
             <div className="stack">
               {manifest.greenButton.map((name) => (
                 <div key={name} className="ledger-row">

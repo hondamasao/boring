@@ -1,9 +1,18 @@
+import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import type { BillLine } from '@boring/rating-engine';
 import { Progress } from '../../../../components/Progress';
 import { isValidUploadId, readManifest } from '../../../../lib/storage';
 import { readConfirmation } from '../../../../lib/extraction-storage';
 import { compareBillToOptions, type ExcludedBill, type MonthlyComparison } from '../../../../lib/compare-options';
+
+// The whole reason this field exists: a report holds one customer's real
+// bill totals, rate schedule, and dollar figures behind an unguessable
+// link. It must never be crawled, cached, or listed by a search engine.
+export const metadata: Metadata = {
+  title: 'Rate Comparison Report',
+  robots: { index: false, follow: false },
+};
 
 function formatUsd(n: number): string {
   return n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });

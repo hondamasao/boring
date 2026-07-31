@@ -1,5 +1,17 @@
+import type { Metadata } from 'next';
 import { Progress } from '../../components/Progress';
 import { submitUpload } from './actions';
+
+const TITLE = 'Upload Your SCE Bills';
+const DESCRIPTION =
+  "Upload 12 months of Southern California Edison commercial bills as PDF. Attach a Green Button export if you have one, or we'll estimate your usage instead.";
+
+export const metadata: Metadata = {
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: '/upload' },
+  openGraph: { title: TITLE, description: DESCRIPTION, url: '/upload' },
+};
 
 export default async function UploadPage({
   searchParams,

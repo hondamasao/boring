@@ -1,4 +1,21 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
+
+// The root layout's title template ("%s | Boring") only applies to nested
+// segments, not to the page co-located with the layout that defines it —
+// so the homepage sets its own full, brand-first title explicitly rather
+// than relying on that template silently not firing.
+const TITLE = 'Boring | SCE Commercial Electricity Rate Comparison';
+const OG_TITLE = 'SCE Commercial Electricity Rate Comparison';
+const DESCRIPTION =
+  "Upload 12 months of SCE bills and find out if a cheaper commercial rate schedule exists, itemized and explained. Free while we're in beta.";
+
+export const metadata: Metadata = {
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: '/' },
+  openGraph: { title: OG_TITLE, description: DESCRIPTION, url: '/' },
+};
 
 export default function HomePage() {
   return (
@@ -40,7 +57,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      <p className="section-label">Why free</p>
+      <h2 className="section-label">Why free</h2>
       <p>
         This tool is free while we&apos;re validating it. The tariff rates come from Southern
         California Edison&apos;s actual TOU-GS-2 sheet, cross-checked several independent ways. They
@@ -49,7 +66,7 @@ export default function HomePage() {
         stored privately, never public, and used only to generate your report.
       </p>
 
-      <p className="section-label">How it works</p>
+      <h2 className="section-label">How it works</h2>
       <div className="steps">
         <div>
           <span className="step-num">01</span>
@@ -72,7 +89,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      <p className="section-label">What&apos;s solid, what&apos;s still open</p>
+      <h2 className="section-label">What&apos;s solid, what&apos;s still open</h2>
       <div className="trust-grid">
         <div className="trust-col">
           <h3>Already verified</h3>
