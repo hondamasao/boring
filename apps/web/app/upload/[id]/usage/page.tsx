@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import type { LoadShapeEstimate } from '@boring/load-shape-estimator';
+import { Progress } from '../../../../components/Progress';
 import { isValidUploadId, readManifest } from '../../../../lib/storage';
 import { readConfirmation } from '../../../../lib/extraction-storage';
 import { getOrEstimateBill, type BillEstimate } from '../../../../lib/bill-usage';
@@ -82,7 +83,7 @@ export default async function UsagePage({ params }: { params: Promise<{ id: stri
 
   return (
     <main className="shell-main">
-      <p className="eyebrow">Step 3 of 4 · Usage</p>
+      <Progress current={3} />
       <h1>Estimated usage</h1>
 
       {manifest.greenButton.length > 0 ? (

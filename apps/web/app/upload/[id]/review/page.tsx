@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { extractBill, ExtractionError, type ExtractedBill, type ExtractedField } from '@boring/extraction';
+import { Progress } from '../../../../components/Progress';
 import { isValidUploadId, readBillFile, readManifest } from '../../../../lib/storage';
 import { readCachedExtraction, writeCachedExtraction } from '../../../../lib/extraction-storage';
 import { confirmExtraction } from './actions';
@@ -45,6 +46,21 @@ function FieldRow({ label, field }: { label: string; field: ExtractedField<strin
   );
 }
 
+function FieldCard({ label, field }: { label: string; field: ExtractedField<string | number> }) {
+  const display = field.value === null ? 'Not found' : String(field.value);
+  const conf = confidenceStamp(field.confidence);
+  return (
+    <div className="field-card">
+      <div className="field-card-head">
+        <span className="field-card-label">{label}</span>
+        <span className={`stamp ${conf.className}`}>{conf.label}</span>
+      </div>
+      <p className={`field-card-value ${field.value === null ? 'muted' : 'num'}`}>{display}</p>
+      {field.evidence ? <p className="quote small" style={{ margin: 0 }}>“{field.evidence}”</p> : null}
+    </div>
+  );
+}
+
 function BillSection({ result }: { result: BillResult }) {
   const displayName = result.filename.replace(/^\d+-/, '');
 
@@ -55,7 +71,13 @@ function BillSection({ result }: { result: BillResult }) {
           <h3 style={{ marginBottom: 0 }}>{displayName}</h3>
           <span className="stamp stamp-bad">Extraction failed</span>
         </div>
-        <p style={{ marginBottom: 0 }}>{result.message}</p>
+        <p className="small" style={{ fontFamily: 'var(--font-mono)' }}>
+          {result.message}
+        </p>
+        <p className="small muted" style={{ marginBottom: 0 }}>
+          This bill couldn&apos;t be read automatically. Try re-uploading a clearer scan, or leave
+          it out for now — the rest of your bills will still work.
+        </p>
       </div>
     );
   }
@@ -83,7 +105,15 @@ function BillSection({ result }: { result: BillResult }) {
           <span className="stamp stamp-ok">Looks clean</span>
         )}
       </div>
-      <div className="table-scroll">
+      <div className="field-cards">
+        <FieldCard label="Billing period start" field={data.billingPeriod.start} />
+        <FieldCard label="Billing period end" field={data.billingPeriod.end} />
+        <FieldCard label="Rate schedule" field={data.rateSchedule} />
+        <FieldCard label="Total kWh" field={data.totalKwh} />
+        <FieldCard label="Total demand (kW)" field={data.totalDemandKw} />
+        <FieldCard label="Total amount ($)" field={data.totalAmount} />
+      </div>
+      <div className="field-table-wrap table-scroll">
         <table className="data-table">
           <thead>
             <tr>
@@ -125,7 +155,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
 
   return (
     <main className="shell-main">
-      <p className="eyebrow">Step 2 of 4 · Review</p>
+      <Progress current={2} />
       <h1>Review extracted values</h1>
       <p className="muted">
         An AI model read these values off your bills — nobody has typed or checked them yet.

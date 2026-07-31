@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { Progress } from '../../../../components/Progress';
 import { isValidUploadId } from '../../../../lib/storage';
 import { readConfirmation } from '../../../../lib/extraction-storage';
 
@@ -11,7 +12,7 @@ export default async function ConfirmedPage({ params }: { params: Promise<{ id: 
 
   return (
     <main className="shell-main">
-      <p className="eyebrow">Step 2 of 4 · Review</p>
+      <Progress current={2} />
       <h1>Thanks — values confirmed</h1>
       <p className="muted">
         You confirmed {confirmation.bills.length} bill{confirmation.bills.length === 1 ? '' : 's'} at{' '}

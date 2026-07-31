@@ -1,3 +1,4 @@
+import { Progress } from '../../components/Progress';
 import { submitUpload } from './actions';
 
 export default async function UploadPage({
@@ -6,11 +7,12 @@ export default async function UploadPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
-  const showNoBillsError = params.error === 'no-bills';
+  const error = params.error;
+  const badFiles = typeof params.files === 'string' ? params.files : null;
 
   return (
     <main className="shell-main">
-      <p className="eyebrow">Step 1 of 4</p>
+      <Progress current={1} />
       <h1>Upload your bills</h1>
       <p className="muted">
         Upload each monthly bill as a separate PDF — as many months as you have, ideally 12. If
@@ -18,11 +20,20 @@ export default async function UploadPage({
         Data&quot;, attach that too; it&apos;s optional.
       </p>
 
-      {showNoBillsError ? (
+      {error === 'no-bills' ? (
         <div className="notice notice-bad">
-          <p>
+          <p style={{ marginBottom: 0 }}>
             <strong>Choose at least one bill PDF</strong> before submitting — the form was
             reloaded, nothing was uploaded.
+          </p>
+        </div>
+      ) : null}
+
+      {error === 'invalid-file' ? (
+        <div className="notice notice-bad">
+          <p style={{ marginBottom: 0 }}>
+            <strong>{badFiles ?? 'One of your files'} isn&apos;t a PDF.</strong> Bills need to be
+            uploaded as PDF — export or re-scan it as a PDF and try again. Nothing was uploaded.
           </p>
         </div>
       ) : null}

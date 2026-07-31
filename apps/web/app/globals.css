@@ -418,7 +418,11 @@ code {
 .ledger-value {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+  text-align: right;
+  /* No nowrap: a dollar amount or "20.0 kW" never wraps in practice since
+     it has nowhere to break, but a longer descriptive value (the usage
+     estimator's "Method" row) must be free to wrap instead of overflowing
+     the card on a narrow screen. */
 }
 
 .ledger-total .ledger-label,
@@ -578,4 +582,252 @@ details > summary:hover {
   .card {
     padding: 1rem;
   }
+}
+
+/* ---------------------------------------------------------------------
+   Homepage
+   --------------------------------------------------------------------- */
+
+.hero-lede {
+  font-size: 1.1rem;
+  color: var(--ink-soft);
+  max-width: 34rem;
+}
+
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 3rem 0 1rem;
+}
+
+.section-label:first-of-type {
+  margin-top: 2.5rem;
+}
+
+.steps {
+  display: grid;
+  gap: 1.75rem;
+  margin: 0 0 1rem;
+}
+
+@media (min-width: 40rem) {
+  .steps {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+.step-num {
+  font-family: var(--font-mono);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.step-title {
+  font-weight: 600;
+  margin: 0 0 0.3rem;
+}
+
+.step-desc {
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  margin: 0;
+}
+
+.trust-grid {
+  display: grid;
+  gap: 1.75rem;
+  margin: 0 0 1rem;
+}
+
+@media (min-width: 40rem) {
+  .trust-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.trust-col h3 {
+  margin-bottom: 0.75rem;
+}
+
+.trust-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trust-list li {
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  padding-left: 1.3rem;
+  position: relative;
+  margin-bottom: 0.75rem;
+}
+
+.trust-list li::before {
+  content: '—';
+  position: absolute;
+  left: 0;
+  color: var(--ink-faint);
+}
+
+.cta-repeat {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--line);
+}
+
+/* A ledger row whose trailing element is a stamp badge instead of a plain
+   value needs vertical centering rather than the usual dotted-leader
+   baseline alignment. */
+.ledger-row-stamped {
+  align-items: center;
+}
+
+/* ---------------------------------------------------------------------
+   Responsive card/table toggles.
+
+   `.table-scroll` is presentation only (scroll behavior + edge fade) and
+   carries no display toggling of its own, so it can be safely combined
+   with either wrapper below. Each toggle pair renders BOTH the card and
+   table markup server-side and lets CSS pick one — no layout shift, no
+   client JS, and no risk of two unrelated toggles fighting over the same
+   element's `display`.
+   --------------------------------------------------------------------- */
+
+.month-cards {
+  display: block;
+}
+
+.month-table-wrap {
+  display: none;
+}
+
+@media (min-width: 40rem) {
+  .month-cards {
+    display: none;
+  }
+
+  .month-table-wrap {
+    display: block;
+  }
+}
+
+.month-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem;
+  margin-bottom: 1rem;
+  background: var(--surface);
+}
+
+.month-card-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+}
+
+.month-card-header h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* A right-edge fade hints that a table scrolls further, without needing
+   JS to detect scroll position. */
+.table-scroll {
+  position: relative;
+}
+
+.table-scroll::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 1.75rem;
+  background: linear-gradient(to right, transparent, var(--paper));
+  pointer-events: none;
+}
+
+.table-scroll > table {
+  position: relative;
+}
+
+/* ---------------------------------------------------------------------
+   Field rows on narrow screens (review page) — a stacked layout replaces
+   the four-column table, same data, no horizontal scrolling required.
+   --------------------------------------------------------------------- */
+
+.field-cards {
+  display: block;
+}
+
+.field-table-wrap {
+  display: none;
+}
+
+@media (min-width: 36rem) {
+  .field-cards {
+    display: none;
+  }
+
+  .field-table-wrap {
+    display: block;
+  }
+}
+
+.field-card {
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.field-card:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.field-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.3rem;
+}
+
+.field-card-label {
+  font-weight: 600;
+}
+
+.field-card-value {
+  margin: 0 0 0.3rem;
+}
+
+/* ---------------------------------------------------------------------
+   Full-bleed error pages (not-found, error boundary)
+   --------------------------------------------------------------------- */
+
+.error-page {
+  max-width: 30rem;
+  margin: 0 auto;
+  padding: 4.5rem 1.25rem 3rem;
+  text-align: center;
+}
+
+.error-page .stamp {
+  margin-bottom: 1.25rem;
+}
+
+.error-page p {
+  color: var(--ink-soft);
+}
+
+.error-page .btn {
+  margin-top: 0.75rem;
 }

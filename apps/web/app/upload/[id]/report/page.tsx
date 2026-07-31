@@ -1,5 +1,6 @@
 import { notFound, redirect } from 'next/navigation';
 import type { BillLine } from '@boring/rating-engine';
+import { Progress } from '../../../../components/Progress';
 import { isValidUploadId, readManifest } from '../../../../lib/storage';
 import { readConfirmation } from '../../../../lib/extraction-storage';
 import { compareBillToOptions, type ExcludedBill, type MonthlyComparison } from '../../../../lib/compare-options';
@@ -22,23 +23,69 @@ function LineLedger({ lines }: { lines: BillLine[] }) {
   );
 }
 
-function MonthRow({ c }: { c: MonthlyComparison }) {
-  const onFileLabel = c.onFileOption ? `Option ${c.onFileOption}` : c.onFileRaw ? `${c.onFileRaw} (unclear)` : 'Unknown';
+function onFileLabelFor(c: MonthlyComparison): string {
+  return c.onFileOption ? `Option ${c.onFileOption}` : c.onFileRaw ? `${c.onFileRaw} (unclear)` : 'Unknown';
+}
 
+function CheaperStamp({ cheaper }: { cheaper: MonthlyComparison['cheaper'] }) {
+  return (
+    <span className={`stamp ${cheaper === 'tie' ? 'stamp-neutral' : 'stamp-ok'}`}>
+      {cheaper === 'tie' ? 'Tie' : `Option ${cheaper}`}
+    </span>
+  );
+}
+
+function MonthRow({ c }: { c: MonthlyComparison }) {
   return (
     <tr>
       <td style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{c.monthLabel}</td>
       <td className="num">{formatUsd(c.billD.total)}</td>
       <td className="num">{formatUsd(c.billE.total)}</td>
       <td>
-        <span className={`stamp ${c.cheaper === 'tie' ? 'stamp-neutral' : 'stamp-ok'}`}>
-          {c.cheaper === 'tie' ? 'Tie' : `Option ${c.cheaper}`}
-        </span>
+        <CheaperStamp cheaper={c.cheaper} />
       </td>
       <td className="num">{formatUsd(c.deltaAbs)}</td>
-      <td className="small muted">{onFileLabel}</td>
+      <td className="small muted">{onFileLabelFor(c)}</td>
       <td className="num">{c.actualBilled !== null ? formatUsd(c.actualBilled) : '—'}</td>
     </tr>
+  );
+}
+
+function MonthCard({ c }: { c: MonthlyComparison }) {
+  return (
+    <div className="month-card">
+      <div className="month-card-header">
+        <h3>{c.monthLabel}</h3>
+        <CheaperStamp cheaper={c.cheaper} />
+      </div>
+      <div className="stack">
+        <div className="ledger-row">
+          <span className="ledger-label">Option D</span>
+          <span className="ledger-fill" aria-hidden="true" />
+          <span className="ledger-value">{formatUsd(c.billD.total)}</span>
+        </div>
+        <div className="ledger-row">
+          <span className="ledger-label">Option E</span>
+          <span className="ledger-fill" aria-hidden="true" />
+          <span className="ledger-value">{formatUsd(c.billE.total)}</span>
+        </div>
+        <div className="ledger-row">
+          <span className="ledger-label">Difference</span>
+          <span className="ledger-fill" aria-hidden="true" />
+          <span className="ledger-value">{formatUsd(c.deltaAbs)}</span>
+        </div>
+        <div className="ledger-row ledger-row-stamped">
+          <span className="ledger-label">On file</span>
+          <span className="ledger-fill" aria-hidden="true" />
+          <span className="small muted">{onFileLabelFor(c)}</span>
+        </div>
+        <div className="ledger-row">
+          <span className="ledger-label">Actually billed</span>
+          <span className="ledger-fill" aria-hidden="true" />
+          <span className="ledger-value">{c.actualBilled !== null ? formatUsd(c.actualBilled) : '—'}</span>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -72,7 +119,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   if (comparisons.length === 0) {
     return (
       <main className="shell-main wide">
-        <p className="eyebrow">Step 4 of 4 · Report</p>
+        <Progress current={4} />
         <h1>Rate comparison report</h1>
         {betaNotice}
         <div className="notice notice-bad">
@@ -110,7 +157,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
 
   return (
     <main className="shell-main wide">
-      <p className="eyebrow">Step 4 of 4 · Report</p>
+      <Progress current={4} />
       <h1>Rate comparison report</h1>
       {betaNotice}
 
@@ -201,7 +248,12 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       )}
 
       <h2>Month by month</h2>
-      <div className="table-scroll">
+      <div className="month-cards">
+        {comparisons.map((c) => (
+          <MonthCard key={c.filename} c={c} />
+        ))}
+      </div>
+      <div className="month-table-wrap table-scroll">
         <table className="data-table">
           <thead>
             <tr>

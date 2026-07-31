@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { Progress } from '../../../components/Progress';
 import { isValidUploadId, readManifest } from '../../../lib/storage';
 
 export default async function UploadConfirmationPage({
@@ -15,7 +16,7 @@ export default async function UploadConfirmationPage({
 
   return (
     <main className="shell-main">
-      <p className="eyebrow">Step 1 of 4 · Upload</p>
+      <Progress current={1} />
       <h1>Files received</h1>
       <p className="muted">
         We received {manifest.bills.length} bill PDF{manifest.bills.length === 1 ? '' : 's'}
