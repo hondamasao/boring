@@ -16,6 +16,7 @@ export default defineConfig({
       '@boring/rating-engine': pkg('rating-engine'),
       '@boring/fixture-harness': pkg('fixture-harness'),
       '@boring/extraction': pkg('extraction'),
+      '@boring/load-shape-estimator': pkg('load-shape-estimator'),
     },
   },
   test: {

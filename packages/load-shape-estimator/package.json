@@ -1,0 +1,30 @@
+{
+  "name": "@boring/load-shape-estimator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Fallback synthetic interval profile for bills with no Green Button export: a generic small-commercial diurnal shape, scaled to match the bill's own totals. Deterministic — no LLM, no network, no randomness.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@boring/tariff-schema": "workspace:*",
+    "luxon": "^3.7.2",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/luxon": "^3.7.1"
+  }
+}

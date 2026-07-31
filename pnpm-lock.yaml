@@ -23,6 +23,12 @@ importers:
       '@boring/extraction':
         specifier: workspace:*
         version: link:../../packages/extraction
+      '@boring/load-shape-estimator':
+        specifier: workspace:*
+        version: link:../../packages/load-shape-estimator
+      luxon:
+        specifier: ^3.7.2
+        version: 3.7.2
       next:
         specifier: ^16.2.12
         version: 16.2.12(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -33,6 +39,9 @@ importers:
         specifier: ^19.2.8
         version: 19.2.8(react@19.2.8)
     devDependencies:
+      '@types/luxon':
+        specifier: ^3.7.1
+        version: 3.7.2
       '@types/node':
         specifier: ^22.20.1
         version: 22.20.1
@@ -66,6 +75,22 @@ importers:
       zod:
         specifier: ^3.25.76
         version: 3.25.76
+
+  packages/load-shape-estimator:
+    dependencies:
+      '@boring/tariff-schema':
+        specifier: workspace:*
+        version: link:../tariff-schema
+      luxon:
+        specifier: ^3.7.2
+        version: 3.7.2
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
+    devDependencies:
+      '@types/luxon':
+        specifier: ^3.7.1
+        version: 3.7.2
 
   packages/rating-engine:
     dependencies:

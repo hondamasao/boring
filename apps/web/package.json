@@ -10,11 +10,14 @@
   },
   "dependencies": {
     "@boring/extraction": "workspace:*",
+    "@boring/load-shape-estimator": "workspace:*",
+    "luxon": "^3.7.2",
     "next": "^16.2.12",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
   "devDependencies": {
+    "@types/luxon": "^3.7.1",
     "@types/node": "^22.20.1",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
