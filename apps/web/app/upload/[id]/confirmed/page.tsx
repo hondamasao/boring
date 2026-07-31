@@ -13,7 +13,7 @@ export default async function ConfirmedPage({ params }: { params: Promise<{ id: 
   return (
     <main className="shell-main">
       <Progress current={2} />
-      <h1>Thanks — values confirmed</h1>
+      <h1>Values confirmed</h1>
       <p className="muted">
         You confirmed {confirmation.bills.length} bill{confirmation.bills.length === 1 ? '' : 's'} at{' '}
         <span className="num">{new Date(confirmation.confirmedAt).toLocaleString()}</span>.

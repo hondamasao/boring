@@ -91,7 +91,7 @@ export default async function UsagePage({ params }: { params: Promise<{ id: stri
           <p style={{ marginBottom: 0 }}>
             You attached {manifest.greenButton.length} Green Button file{manifest.greenButton.length === 1 ? '' : 's'},
             but the parser for it (<code>packages/greenbutton</code>) isn&apos;t built yet. We used the estimated
-            load shape below instead — your Green Button file was not used.
+            load shape below instead. Your Green Button file wasn&apos;t used.
           </p>
         </div>
       ) : null}
@@ -99,9 +99,9 @@ export default async function UsagePage({ params }: { params: Promise<{ id: stri
       <div className="notice notice-beta">
         <p style={{ marginBottom: 0 }}>
           <strong>This usage profile is ESTIMATED, not measured.</strong>{' '}
-          No interval data was used to build it — see &quot;Assumptions used&quot; on each bill
-          below for exactly how, and treat any demand-charge-related finding built from it as a
-          rough approximation rather than a precise number.
+          No interval data went into it. Check &quot;Assumptions used&quot; on each bill below to
+          see exactly how we built the numbers, and treat any demand-charge finding as a rough
+          approximation, not a precise figure.
         </p>
       </div>
 

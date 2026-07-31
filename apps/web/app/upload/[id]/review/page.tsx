@@ -76,7 +76,7 @@ function BillSection({ result }: { result: BillResult }) {
         </p>
         <p className="small muted" style={{ marginBottom: 0 }}>
           This bill couldn&apos;t be read automatically. Try re-uploading a clearer scan, or leave
-          it out for now — the rest of your bills will still work.
+          it out for now. The rest of your bills will still work.
         </p>
       </div>
     );
@@ -158,9 +158,9 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
       <Progress current={2} />
       <h1>Review extracted values</h1>
       <p className="muted">
-        An AI model read these values off your bills — nobody has typed or checked them yet.
-        Compare every field against the actual PDF before confirming, especially anything flagged
-        below 50% confidence.
+        An AI model read these values off your bills. Nobody has typed or checked them yet, so
+        compare every field against the actual PDF before confirming. Watch especially for anything
+        flagged below 50% confidence.
       </p>
 
       {results.map((result) => (

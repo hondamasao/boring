@@ -53,7 +53,7 @@ export default async function UploadConfirmationPage({
           </>
         ) : (
           <p className="small muted" style={{ marginTop: '1rem', marginBottom: 0 }}>
-            No Green Button data attached — we&apos;ll estimate your usage pattern instead.
+            No Green Button data attached. We&apos;ll estimate your usage pattern instead.
           </p>
         )}
       </div>

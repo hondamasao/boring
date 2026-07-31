@@ -7,7 +7,7 @@ export default function HomePage() {
       <h1>Are you on the cheapest SCE rate for your business?</h1>
       <p className="hero-lede">
         Upload 12 months of bills. We&apos;ll check the rate schedule you&apos;re on against the
-        alternative and tell you, plainly, whether a cheaper one exists — and by how much.
+        alternative and tell you, plainly, whether a cheaper one exists, and by how much.
       </p>
       <p>
         <Link href="/upload" className="btn">
@@ -42,11 +42,11 @@ export default function HomePage() {
 
       <p className="section-label">Why free</p>
       <p>
-        This tool is free while we&apos;re validating it. The tariff rates it uses come from
-        Southern California Edison&apos;s actual TOU-GS-2 sheet, cross-checked several independent
-        ways — but they haven&apos;t been reconciled against a real customer bill yet, and that&apos;s
-        the actual bar for calling any of this trustworthy. Your bills help us close that gap. Your
-        files are stored privately, never public, and used only to generate your report.
+        This tool is free while we&apos;re validating it. The tariff rates come from Southern
+        California Edison&apos;s actual TOU-GS-2 sheet, cross-checked several independent ways. They
+        still haven&apos;t been reconciled against a real customer&apos;s bill, and that&apos;s the
+        actual bar for calling any of this trustworthy. Your bills help us close that gap. Files are
+        stored privately, never public, and used only to generate your report.
       </p>
 
       <p className="section-label">How it works</p>
@@ -54,7 +54,7 @@ export default function HomePage() {
         <div>
           <span className="step-num">01</span>
           <p className="step-title">Upload your bills</p>
-          <p className="step-desc">One PDF per month, as many as you have — ideally all 12.</p>
+          <p className="step-desc">One PDF per month. As many as you have, ideally all 12.</p>
         </div>
         <div>
           <span className="step-num">02</span>
@@ -80,7 +80,7 @@ export default function HomePage() {
             <li>The rates come straight from SCE&apos;s actual TOU-GS-2 tariff sheet, not a summary or a guess.</li>
             <li>
               We independently re-transcribed the whole document from scratch and diffed it against
-              what&apos;s in the tool — zero discrepancies.
+              what&apos;s in the tool. Zero discrepancies.
             </li>
             <li>
               A permanent automated check re-reads the source PDF every time our tests run, so the
@@ -92,8 +92,8 @@ export default function HomePage() {
           <h3>Still open</h3>
           <ul className="trust-list">
             <li>
-              A person hasn&apos;t signed off on the tariff records against the PDF yet — the checks
-              above raise our confidence, they don&apos;t replace that.
+              A person hasn&apos;t signed off on the tariff records against the PDF yet. The checks
+              above raise our confidence, but they don&apos;t replace that.
             </li>
             <li>
               We haven&apos;t reconciled these numbers against a real customer&apos;s real bill. That&apos;s

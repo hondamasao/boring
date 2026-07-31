@@ -110,8 +110,8 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       <p style={{ marginBottom: 0 }}>
         <strong>This is a free beta tool.</strong>{' '}
         Estimates are based on your uploaded bill data and may include a load-shape estimate
-        rather than your exact usage. We&apos;re actively validating this against real customer
-        bills — your data helps us do that.
+        instead of your exact usage. We&apos;re actively validating this against real customer
+        bills, and your data helps us do that.
       </p>
     </div>
   );
@@ -237,13 +237,13 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
         </p>
       ) : onFileOptions.size > 1 ? (
         <p>
-          Your bills show different options across months ({[...onFileOptions].map((o) => `Option ${o}`).join(', ')}) —
-          see the &quot;On file&quot; column below for which applies to each.
+          Your bills show different options across months ({[...onFileOptions].map((o) => `Option ${o}`).join(', ')}).
+          See the &quot;On file&quot; column below for which applies to each.
         </p>
       ) : (
         <p>
-          We couldn&apos;t automatically tell which option your bills are currently on from the printed rate schedule
-          — see the &quot;On file&quot; column below for the raw text.
+          We couldn&apos;t automatically tell which option your bills are currently on from the printed rate
+          schedule. See the &quot;On file&quot; column below for the raw text.
         </p>
       )}
 
@@ -274,8 +274,8 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
         </table>
       </div>
       <p className="small muted">
-        &quot;Actually billed&quot; is what your bill says you paid — it&apos;s shown for context, not compared
-        directly, since it reflects whatever option you were actually on, not necessarily Option D or E.
+        &quot;Actually billed&quot; is what your bill says you paid. It&apos;s here for context. Your actual
+        option on file might be Option D, Option E, or something else the report doesn&apos;t compare directly.
       </p>
 
       <details style={{ marginTop: '1.5rem' }}>
@@ -325,7 +325,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
         {first.billD.tariffProvenance.sheetRevision} / {first.billE.tariffProvenance.sheetRevision}. Both records are
         still marked pending human verification against the source PDF (see{' '}
         <code>packages/tariff-library/PENDING.md</code>). Usage for these months is ESTIMATED, not measured, unless
-        noted otherwise — see the usage page for exactly how each month was built.
+        noted otherwise. See the usage page for exactly how each month was built.
       </p>
     </main>
   );
