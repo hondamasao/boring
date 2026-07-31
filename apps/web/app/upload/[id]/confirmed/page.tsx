@@ -10,14 +10,17 @@ export default async function ConfirmedPage({ params }: { params: Promise<{ id: 
   if (confirmation === null) notFound();
 
   return (
-    <main>
+    <main className="shell-main">
+      <p className="eyebrow">Step 2 of 4 · Review</p>
       <h1>Thanks — values confirmed</h1>
-      <p>
+      <p className="muted">
         You confirmed {confirmation.bills.length} bill{confirmation.bills.length === 1 ? '' : 's'} at{' '}
-        {new Date(confirmation.confirmedAt).toLocaleString()}.
+        <span className="num">{new Date(confirmation.confirmedAt).toLocaleString()}</span>.
       </p>
       <p>
-        <Link href={`/upload/${id}/usage`}>Estimate your usage pattern →</Link>
+        <Link href={`/upload/${id}/usage`} className="btn">
+          Estimate your usage pattern →
+        </Link>
       </p>
     </main>
   );

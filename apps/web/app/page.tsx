@@ -2,15 +2,17 @@ import Link from 'next/link';
 
 export default function HomePage() {
   return (
-    <main>
-      <h1>SCE commercial bill audit — free beta</h1>
-      <p>
-        Upload 12 months of Southern California Edison bills. We&apos;ll check the rate
-        schedule you&apos;re on against the alternatives and tell you if a cheaper one
-        exists.
+    <main className="shell-main">
+      <p className="eyebrow">Southern California Edison · commercial accounts</p>
+      <h1>Are you on the cheapest SCE rate for your business?</h1>
+      <p style={{ fontSize: '1.1rem', color: 'var(--ink-soft)', maxWidth: '34rem' }}>
+        Upload 12 months of bills. We&apos;ll check the rate schedule you&apos;re on against the
+        alternative and tell you, plainly, whether a cheaper one exists — and by how much.
       </p>
       <p>
-        <Link href="/upload">Upload bills →</Link>
+        <Link href="/upload" className="btn">
+          Upload your bills →
+        </Link>
       </p>
     </main>
   );

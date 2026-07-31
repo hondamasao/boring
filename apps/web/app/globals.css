@@ -1,0 +1,581 @@
+/* ---------------------------------------------------------------------
+   Design tokens.
+
+   "Boring but trustworthy": a utility-audit tool should read like a
+   credible statement, not a startup landing page. The palette is a cool,
+   quiet paper (not the warm-cream default) with a single confident teal
+   accent; type pairs an institutional serif for headings with a civic
+   grotesk (Public Sans — the U.S. Web Design System's own typeface) for
+   reading, and a monospace for every number and status tag, so a dollar
+   figure or a confidence score always looks like it was measured, not
+   decorated.
+
+   The signature motif is the "audit stamp": bordered uppercase mono tags
+   (BETA, ESTIMATED, VERIFIED, PENDING REVIEW, confidence levels) that
+   read like ink stamps on a document, plus dotted-leader rows for
+   itemized figures — both drawn directly from the subject (auditing a
+   bill) rather than layered on for decoration.
+   --------------------------------------------------------------------- */
+
+:root {
+  --paper: #f3f6f6;
+  --surface: #ffffff;
+  --surface-sunk: #eef2f1;
+  --ink: #16232a;
+  --ink-soft: #55676a;
+  --ink-faint: #8b9a9a;
+  --line: #dbe3e1;
+  --line-strong: #c1cdca;
+
+  --accent: #0e5c64;
+  --accent-ink: #0a454b;
+  --accent-soft: #e4eeec;
+  --accent-soft-line: #bfd6d2;
+
+  --ok: #1e7a54;
+  --ok-bg: #e8f3ec;
+  --ok-line: #b9dcc7;
+  --warn: #92620d;
+  --warn-bg: #faf1de;
+  --warn-line: #e7cd97;
+  --bad: #a23b33;
+  --bad-bg: #f7e9e7;
+  --bad-line: #e2b8b2;
+
+  --radius-sm: 4px;
+  --radius: 8px;
+  --radius-lg: 14px;
+
+  --shadow-card: 0 1px 2px rgba(22, 35, 42, 0.04), 0 1px 8px rgba(22, 35, 42, 0.03);
+
+  --measure: 42rem;
+  --measure-wide: 60rem;
+
+  --font-display: var(--font-source-serif), 'Iowan Old Style', Georgia, serif;
+  --font-body: var(--font-public-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, 'SFMono-Regular', Menlo, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  color: var(--ink);
+  line-height: 1.15;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.5rem;
+}
+
+h1 {
+  font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.5rem);
+}
+
+h2 {
+  font-size: 1.375rem;
+  margin-top: 2.5rem;
+}
+
+h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+p {
+  margin: 0 0 1rem;
+  color: var(--ink);
+}
+
+a {
+  color: var(--accent);
+}
+
+a:hover {
+  color: var(--accent-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: var(--surface-sunk);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+}
+
+/* Tabular data: dollar amounts, kWh, kW, percentages, dates, ids. */
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+/* ---------------------------------------------------------------------
+   Shell
+   --------------------------------------------------------------------- */
+
+.shell-header {
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.shell-header-inner {
+  max-width: var(--measure-wide);
+  margin: 0 auto;
+  padding: 0.9rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.wordmark {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  text-decoration: none;
+  color: var(--ink);
+}
+
+.wordmark-mark {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+
+.wordmark-sub {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  display: none;
+}
+
+@media (min-width: 32rem) {
+  .wordmark-sub {
+    display: inline;
+  }
+}
+
+.shell-main {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: 2.25rem 1.25rem 5rem;
+}
+
+.shell-main.wide {
+  max-width: var(--measure-wide);
+}
+
+/* ---------------------------------------------------------------------
+   Stamps — the signature element. Bordered uppercase mono tags standing
+   in for the app's real verification states.
+   --------------------------------------------------------------------- */
+
+.stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.28em 0.6em;
+  border-radius: var(--radius-sm);
+  border: 1px solid currentColor;
+  white-space: nowrap;
+  line-height: 1.3;
+}
+
+.stamp-neutral {
+  color: var(--ink-soft);
+  background: var(--surface-sunk);
+  border-color: var(--line-strong);
+}
+
+.stamp-accent {
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+  border-color: var(--accent-soft-line);
+}
+
+.stamp-ok {
+  color: var(--ok);
+  background: var(--ok-bg);
+  border-color: var(--ok-line);
+}
+
+.stamp-warn {
+  color: var(--warn);
+  background: var(--warn-bg);
+  border-color: var(--warn-line);
+}
+
+.stamp-bad {
+  color: var(--bad);
+  background: var(--bad-bg);
+  border-color: var(--bad-line);
+}
+
+/* ---------------------------------------------------------------------
+   Cards, callouts, notices
+   --------------------------------------------------------------------- */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: 1.25rem 1.35rem;
+  margin-bottom: 1.5rem;
+}
+
+.card-bad {
+  border-color: var(--bad-line);
+  background: var(--bad-bg);
+}
+
+.card-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.notice {
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  padding: 1rem 1.15rem;
+  margin-bottom: 1.5rem;
+}
+
+.notice p:last-child {
+  margin-bottom: 0;
+}
+
+.notice-beta {
+  background: var(--accent-soft);
+  border-color: var(--accent-soft-line);
+  color: var(--accent-ink);
+}
+
+.notice-warn {
+  background: var(--warn-bg);
+  border-color: var(--warn-line);
+  color: var(--warn);
+}
+
+.notice-warn p,
+.notice-warn li {
+  color: var(--ink);
+}
+
+.notice-bad {
+  background: var(--bad-bg);
+  border-color: var(--bad-line);
+  color: var(--bad);
+}
+
+.notice-bad p,
+.notice-bad li {
+  color: var(--ink);
+}
+
+/* ---------------------------------------------------------------------
+   Buttons + forms
+   --------------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.7rem 1.25rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 120ms ease, border-color 120ms ease, transform 60ms ease;
+}
+
+.btn:hover {
+  background: var(--accent-ink);
+  border-color: var(--accent-ink);
+  color: #fff;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--accent);
+}
+
+.btn-secondary:hover {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.field-group {
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.2rem;
+  margin: 0 0 1.25rem;
+  background: var(--surface);
+}
+
+.field-group legend {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  padding: 0 0.4em;
+}
+
+.field-group input[type='file'] {
+  display: block;
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  margin-top: 0.5rem;
+}
+
+.field-hint {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  margin: 0.4rem 0 0;
+}
+
+/* ---------------------------------------------------------------------
+   Ledger rows — dotted-leader lines for itemized figures, like a
+   printed statement or receipt.
+   --------------------------------------------------------------------- */
+
+.ledger {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ledger-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.3rem 0;
+}
+
+.ledger-row + .ledger-row {
+  border-top: 1px solid var(--line);
+}
+
+.ledger-label {
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+}
+
+.ledger-fill {
+  flex: 1;
+  border-bottom: 1px dotted var(--line-strong);
+  margin-bottom: 0.35em;
+  min-width: 0.75rem;
+}
+
+.ledger-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ledger-total .ledger-label,
+.ledger-total .ledger-value {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------------------
+   Data tables
+   --------------------------------------------------------------------- */
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.data-table th {
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  font-weight: 600;
+  padding: 0 0.75rem 0.5rem 0;
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.data-table td {
+  padding: 0.55rem 0.75rem 0.55rem 0;
+  vertical-align: top;
+  border-bottom: 1px solid var(--line);
+}
+
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table .num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  margin: 0 -0.1rem 0.5rem;
+  padding: 0 0.1rem;
+}
+
+/* ---------------------------------------------------------------------
+   Progress steps
+   --------------------------------------------------------------------- */
+
+.progress {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.progress-step {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.4rem 0.7rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line-strong);
+  color: var(--ink-faint);
+  background: var(--surface);
+}
+
+.progress-step-num {
+  font-weight: 700;
+}
+
+.progress-step.is-done {
+  color: var(--accent-ink);
+  border-color: var(--accent-soft-line);
+  background: var(--accent-soft);
+}
+
+.progress-step.is-current {
+  color: var(--ink);
+  border-color: var(--ink);
+  background: var(--surface);
+}
+
+.progress-step.is-current .progress-step-num {
+  color: var(--accent);
+}
+
+.progress-sep {
+  align-self: center;
+  color: var(--line-strong);
+  font-family: var(--font-mono);
+}
+
+/* ---------------------------------------------------------------------
+   Utility
+   --------------------------------------------------------------------- */
+
+.muted {
+  color: var(--ink-soft);
+}
+
+.small {
+  font-size: 0.85rem;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0 0 0.5rem;
+}
+
+.stack > * + * {
+  margin-top: 0.75rem;
+}
+
+.hr {
+  border: none;
+  border-top: 1px solid var(--line);
+  margin: 2rem 0;
+}
+
+.quote {
+  color: var(--ink-soft);
+  font-style: italic;
+}
+
+details > summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--accent-ink);
+  padding: 0.4rem 0;
+}
+
+details > summary:hover {
+  color: var(--accent);
+}
+
+@media (max-width: 30rem) {
+  .shell-main {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .card {
+    padding: 1rem;
+  }
+}
