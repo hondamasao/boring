@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "cd ../.. && pnpm run build && cd apps/web && next build",
     "start": "next start"
   },
   "dependencies": {
@@ -13,6 +13,7 @@
     "@boring/load-shape-estimator": "workspace:*",
     "@boring/rating-engine": "workspace:*",
     "@boring/tariff-schema": "workspace:*",
+    "@vercel/blob": "^2.6.1",
     "luxon": "^3.7.2",
     "next": "^16.2.12",
     "react": "^19.2.8",

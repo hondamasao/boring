@@ -1,8 +1,6 @@
-import { readFile } from 'node:fs/promises';
-import path from 'node:path';
 import { notFound } from 'next/navigation';
 import { extractBill, ExtractionError, type ExtractedBill, type ExtractedField } from '@boring/extraction';
-import { isValidUploadId, readManifest, uploadDir } from '../../../../lib/storage';
+import { isValidUploadId, readBillFile, readManifest } from '../../../../lib/storage';
 import { readCachedExtraction, writeCachedExtraction } from '../../../../lib/extraction-storage';
 import { confirmExtraction } from './actions';
 
@@ -15,7 +13,8 @@ async function getOrExtract(uploadId: string, filename: string): Promise<BillRes
   if (cached !== null) return { filename, status: 'ok', data: cached };
 
   try {
-    const bytes = await readFile(path.join(uploadDir(uploadId), 'bills', filename));
+    const bytes = await readBillFile(uploadId, filename);
+    if (bytes === null) throw new Error('Bill file not found in storage.');
     const data = await extractBill(bytes);
     await writeCachedExtraction(uploadId, filename, data);
     return { filename, status: 'ok', data };

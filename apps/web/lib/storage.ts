@@ -1,23 +1,21 @@
 import { randomUUID } from 'node:crypto';
-import { mkdir, readdir, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { storageBackend } from './storage-backend';
 
 /**
- * Upload storage for the beta pipeline: plain files on local disk, keyed by a
- * random upload id. No database, no accounts — this is the smallest thing
- * that lets an upload survive across the request boundary between the upload
- * step and the confirmation/report steps that follow it.
+ * Upload storage for the beta pipeline, keyed by a random upload id. No
+ * database, no accounts — this is the smallest thing that lets an upload
+ * survive across the request boundary between the upload step and the
+ * confirmation/report steps that follow it. `uploadDir` returns a logical
+ * key prefix, not a filesystem path — see storage-backend.ts for where that
+ * prefix actually lands (local disk in dev, Vercel Blob in production).
  */
-
-function uploadsRoot(): string {
-  return path.join(process.cwd(), '.data', 'uploads');
-}
 
 export function uploadDir(id: string): string {
   // id always comes from randomUUID() (see createUpload) or is validated by
-  // isValidUploadId before being used to build a path — never taken raw from
+  // isValidUploadId before being used to build a key — never taken raw from
   // a URL param without that check.
-  return path.join(uploadsRoot(), id);
+  return `uploads/${id}`;
 }
 
 export function isValidUploadId(id: string): boolean {
@@ -39,18 +37,17 @@ export interface UploadManifest {
 
 export async function createUpload(bills: File[], greenButton: File[]): Promise<string> {
   const id = randomUUID();
+  const backend = storageBackend();
   const dir = uploadDir(id);
-  await mkdir(path.join(dir, 'bills'), { recursive: true });
-  await mkdir(path.join(dir, 'greenbutton'), { recursive: true });
 
   await Promise.all([
     ...bills.map(async (file, index) => {
       const buf = Buffer.from(await file.arrayBuffer());
-      await writeFile(path.join(dir, 'bills', safeName(file.name, index)), buf);
+      await backend.write(`${dir}/bills/${safeName(file.name, index)}`, buf);
     }),
     ...greenButton.map(async (file, index) => {
       const buf = Buffer.from(await file.arrayBuffer());
-      await writeFile(path.join(dir, 'greenbutton', safeName(file.name, index)), buf);
+      await backend.write(`${dir}/greenbutton/${safeName(file.name, index)}`, buf);
     }),
   ]);
 
@@ -58,15 +55,18 @@ export async function createUpload(bills: File[], greenButton: File[]): Promise<
 }
 
 export async function readManifest(id: string): Promise<UploadManifest | null> {
+  const backend = storageBackend();
   const dir = uploadDir(id);
-  try {
-    await stat(dir);
-  } catch {
-    return null;
-  }
   const [bills, greenButton] = await Promise.all([
-    readdir(path.join(dir, 'bills')).catch(() => []),
-    readdir(path.join(dir, 'greenbutton')).catch(() => []),
+    backend.list(`${dir}/bills`),
+    backend.list(`${dir}/greenbutton`),
   ]);
+  // Every real upload has at least one bill (submitUpload rejects an empty
+  // one before createUpload ever runs) — no bills means no such upload.
+  if (bills.length === 0) return null;
   return { id, bills: bills.sort(), greenButton: greenButton.sort() };
+}
+
+export async function readBillFile(id: string, filename: string): Promise<Buffer | null> {
+  return storageBackend().read(`${uploadDir(id)}/bills/${filename}`);
 }

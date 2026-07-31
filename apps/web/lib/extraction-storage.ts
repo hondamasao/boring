@@ -1,27 +1,23 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import path from 'node:path';
 import { ExtractedBill } from '@boring/extraction';
 import { uploadDir } from './storage';
+import { storageBackend } from './storage-backend';
 
 /**
- * Extraction results, cached to disk per bill so a page reload doesn't
- * re-run (and re-pay for) the model call. Only successful extractions are
- * cached — a failure isn't persisted, so a transient error (rate limit,
- * timeout) is retried on the next page load rather than stuck forever.
+ * Extraction results, cached per bill so a page reload doesn't re-run (and
+ * re-pay for) the model call. Only successful extractions are cached — a
+ * failure isn't persisted, so a transient error (rate limit, timeout) is
+ * retried on the next page load rather than stuck forever.
  */
 
-function extractionsDir(uploadId: string): string {
-  return path.join(uploadDir(uploadId), 'extractions');
-}
-
-function extractionPath(uploadId: string, billFilename: string): string {
-  return path.join(extractionsDir(uploadId), `${billFilename}.json`);
+function extractionKey(uploadId: string, billFilename: string): string {
+  return `${uploadDir(uploadId)}/extractions/${billFilename}.json`;
 }
 
 export async function readCachedExtraction(uploadId: string, billFilename: string): Promise<ExtractedBill | null> {
+  const raw = await storageBackend().read(extractionKey(uploadId, billFilename));
+  if (raw === null) return null;
   try {
-    const raw = await readFile(extractionPath(uploadId, billFilename), 'utf8');
-    return ExtractedBill.parse(JSON.parse(raw));
+    return ExtractedBill.parse(JSON.parse(raw.toString('utf8')));
   } catch {
     return null;
   }
@@ -32,8 +28,7 @@ export async function writeCachedExtraction(
   billFilename: string,
   result: ExtractedBill,
 ): Promise<void> {
-  await mkdir(extractionsDir(uploadId), { recursive: true });
-  await writeFile(extractionPath(uploadId, billFilename), JSON.stringify(result, null, 2));
+  await storageBackend().write(extractionKey(uploadId, billFilename), Buffer.from(JSON.stringify(result, null, 2)));
 }
 
 export interface ConfirmationRecord {
@@ -41,19 +36,20 @@ export interface ConfirmationRecord {
   bills: string[];
 }
 
-function confirmationPath(uploadId: string): string {
-  return path.join(uploadDir(uploadId), 'confirmed.json');
+function confirmationKey(uploadId: string): string {
+  return `${uploadDir(uploadId)}/confirmed.json`;
 }
 
 export async function writeConfirmation(uploadId: string, bills: string[]): Promise<void> {
   const record: ConfirmationRecord = { confirmedAt: new Date().toISOString(), bills };
-  await writeFile(confirmationPath(uploadId), JSON.stringify(record, null, 2));
+  await storageBackend().write(confirmationKey(uploadId), Buffer.from(JSON.stringify(record, null, 2)));
 }
 
 export async function readConfirmation(uploadId: string): Promise<ConfirmationRecord | null> {
+  const raw = await storageBackend().read(confirmationKey(uploadId));
+  if (raw === null) return null;
   try {
-    const raw = await readFile(confirmationPath(uploadId), 'utf8');
-    return JSON.parse(raw) as ConfirmationRecord;
+    return JSON.parse(raw.toString('utf8')) as ConfirmationRecord;
   } catch {
     return null;
   }
