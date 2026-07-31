@@ -8,7 +8,6 @@ packages:
 # unverified in the money path this app calls into.
 #
 # Reserved for later phases — deliberately NOT created yet:
-#   packages/extraction   vision -> schema; the ONLY package allowed to call an LLM
 #   packages/greenbutton  Green Button CSV + ESPI XML parsers
 onlyBuiltDependencies:
   - esbuild

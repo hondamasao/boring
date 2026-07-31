@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { isValidUploadId, readManifest } from '../../../lib/storage';
 
@@ -46,8 +47,8 @@ export default async function UploadConfirmationPage({
       <p style={{ marginTop: '2rem', color: '#666' }}>
         Upload ID: <code>{manifest.id}</code>
       </p>
-      <p style={{ color: '#666' }}>
-        Next: reading the rate schedule, usage, and totals off each bill — not built yet.
+      <p>
+        <Link href={`/upload/${manifest.id}/review`}>Read the rate schedule, usage, and totals off each bill →</Link>
       </p>
     </main>
   );

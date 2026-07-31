@@ -15,6 +15,7 @@ export default defineConfig({
       '@boring/tariff-schema': pkg('tariff-schema'),
       '@boring/rating-engine': pkg('rating-engine'),
       '@boring/fixture-harness': pkg('fixture-harness'),
+      '@boring/extraction': pkg('extraction'),
     },
   },
   test: {

@@ -1,0 +1,26 @@
+{
+  "name": "@boring/extraction",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The one LLM package (CLAUDE.md invariant #1): bill PDF -> raw extracted fields, never trusted silently. No tariff interpretation, no arithmetic on money.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.115.0",
+    "zod": "^3.25.76"
+  }
+}
