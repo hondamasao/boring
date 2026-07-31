@@ -231,6 +231,12 @@ function rateValidated(
         `ratchet "${r.ratchetId}" set the billed demand: ${round4(r.floorKw)} kW floor from ${round4(r.priorPeakKw)} kW in ${r.sourceMonth}, above this period's measured ${round4(determination.measuredPeakKw)} kW`,
       );
     }
+    if (determination.weekdayAmbiguity !== null) {
+      const a = determination.weekdayAmbiguity;
+      notes.push(
+        `AMBIGUOUS: billed with weekdaysOnly=${a.chosenWeekdaysOnly} (${round4(a.chosenPeakKw)} kW); the other reading would have measured ${round4(a.otherPeakKw)} kW this period — verify against SCE (see this charge's citation)`,
+      );
+    }
 
     const draft = {
       id: nextId(determination.chargeId),

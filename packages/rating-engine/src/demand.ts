@@ -15,8 +15,11 @@ import type { DemandDetermination } from './types.js';
  * The two families differ in exactly one place — which windows are eligible — and
  * that difference is read off the charge's TYPE rather than a flag:
  *   facilities   every window in the span, regardless of period;
- *   time-related only windows whose local time falls in the charge's TOU period.
+ *   time-related only windows whose local time falls in the charge's TOU period,
+ *                further restricted to weekdays when `weekdaysOnly` is set.
  */
+
+const WEEKDAY_TYPES = new Set(['mon', 'tue', 'wed', 'thu', 'fri']);
 
 /** A span of windows to search, and how to describe it on the bill. */
 interface Span {
@@ -57,6 +60,19 @@ function spansFor(charge: AnyDemandCharge, calendar: Calendar, windows: readonly
   return spans;
 }
 
+/** Windows eligible for a charge, under one reading of `weekdaysOnly`. Facilities
+ * charges ignore the flag entirely — it only exists on time-related charges. */
+function eligibleWindows(
+  charge: AnyDemandCharge,
+  windows: readonly DemandWindow[],
+  weekdaysOnly: boolean,
+): DemandWindow[] {
+  if (charge.kind === 'facilities') return [...windows];
+  let result = windows.filter((w) => w.placement.periodId === charge.periodId);
+  if (weekdaysOnly) result = result.filter((w) => WEEKDAY_TYPES.has(w.placement.dayType));
+  return result;
+}
+
 export interface DemandResult {
   determinations: DemandDetermination[];
   warnings: string[];
@@ -92,12 +108,19 @@ export function determineDemand(
   ];
 
   for (const charge of charges) {
-    const eligible =
-      charge.kind === 'facilities'
-        ? windows
-        : windows.filter((w) => w.placement.periodId === charge.periodId);
+    const chosenWeekdaysOnly = charge.kind === 'time-related' && charge.weekdaysOnly;
+    const eligible = eligibleWindows(charge, windows, chosenWeekdaysOnly);
+    const spans = spansFor(charge, calendar, eligible);
 
-    for (const span of spansFor(charge, calendar, eligible)) {
+    // Only time-related charges carry the ambiguity at all — compute what the
+    // OTHER reading of weekdaysOnly would have measured, span-for-span, so a
+    // disagreement can be reported per determination rather than assumed away.
+    const otherSpans =
+      charge.kind === 'time-related'
+        ? spansFor(charge, calendar, eligibleWindows(charge, windows, !chosenWeekdaysOnly))
+        : null;
+
+    for (const [index, span] of spans.entries()) {
       const { kw: measuredPeakKw, at } = peakOf(span.windows);
       const determination: DemandDetermination = {
         chargeId: charge.id,
@@ -109,7 +132,20 @@ export function determineDemand(
         peakWindowStartLocal: at,
         billedKw: measuredPeakKw,
         ratchetApplied: null,
+        weekdayAmbiguity: null,
       };
+
+      if (otherSpans !== null && charge.kind === 'time-related') {
+        const otherSpan = otherSpans[index];
+        const otherPeakKw = otherSpan === undefined ? 0 : peakOf(otherSpan.windows).kw;
+        if (otherPeakKw !== measuredPeakKw) {
+          determination.weekdayAmbiguity = {
+            chosenWeekdaysOnly: charge.weekdaysOnly,
+            chosenPeakKw: measuredPeakKw,
+            otherPeakKw,
+          };
+        }
+      }
 
       for (const ratchet of tariff.ratchets) {
         if (ratchet.appliesTo.kind !== charge.kind) continue;
@@ -131,6 +167,13 @@ export function determineDemand(
       // audit trail keeps the true peak visible even though only the rounded
       // figure is billed.
       determination.billedKw = roundToNearestKw(determination.billedKw);
+
+      if (determination.weekdayAmbiguity !== null) {
+        const a = determination.weekdayAmbiguity;
+        warnings.push(
+          `demand charge "${charge.id}" (${charge.label}) has a genuinely ambiguous weekday restriction (see the charge's citation): billed using weekdaysOnly=${a.chosenWeekdaysOnly} (peak ${round4(a.chosenPeakKw)} kW), but the other reading would have measured ${round4(a.otherPeakKw)} kW this period. Verify against SCE directly before treating this bill as final.`,
+        );
+      }
 
       determinations.push(determination);
     }
@@ -186,4 +229,9 @@ function computeFloor(
 function roundToNearestKw(kw: number): number {
   const sign = kw < 0 ? -1 : 1;
   return sign * Math.round(Math.abs(kw));
+}
+
+/** Four decimals, for warning text. Never used for money. */
+function round4(value: number): number {
+  return Math.round(value * 10_000) / 10_000;
 }

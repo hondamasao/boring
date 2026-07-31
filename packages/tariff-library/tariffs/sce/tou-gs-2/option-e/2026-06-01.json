@@ -4,9 +4,9 @@
   "utility": "SCE",
   "scheduleCode": "TOU-GS-2",
   "optionCode": "E",
-  "title": "SCE Schedule TOU-GS-2, Option E — Time-of-Use, General Service, Demand Metered, 20-200 kW",
+  "title": "SCE Schedule TOU-GS-2, Option E \u2014 Time-of-Use, General Service, Demand Metered, 20-200 kW",
   "timezone": "America/Los_Angeles",
-  "notes": "Transcribed directly from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf (21 pages) by Claude. Bundled Service only — Direct Access and CCA Service customers pay Delivery per this record but Generation per their own provider (Sheet 12, Special Condition 12), so the \"generation\"-component lines here do not apply to them (CLAUDE.md: be explicit about which component a recommendation affects).\n\nIMPORTANT CORRECTION to earlier secondary-source-based assumption: Option E is NOT \"FRD only, no TRD.\" Its DELIVERY-side Time Related Demand rate is $0.00/kW (so no delivery TRD line is billed — omitted here rather than included as a permanent $0 line), but a NONZERO GENERATION-side time-related demand rate still applies for Bundled Service Customers: $5.65/kW Summer On-Peak, $2.18/kW Winter Mid-Peak (Sheet 5 Rates table, UG column). So Option E DOES have a real, billable time-related demand charge — just only on the generation component, not delivery. This changes the structural framing used in packages/rating-engine/test/option-structure.test.ts and PENDING.md, both written before this PDF was read.\n\nKNOWN BUT NOT MODELED (all require account/election-conditional logic this schema does not yet support — flagged in PENDING.md, not silently dropped):\n- TOU Option Meter Charge (RTEM), $40.79/meter/month — Sheet 4/5 Rates, Special Condition 2. Only applies if the customer elects an RTEM meter.\n- California Climate Credit, -$36.00/meter — Sheet 13, Special Condition 13. Applied ONLY on April and October bills, only for \"Small Business Customers\" (billing demand did not exceed 20 kW in more than three of the preceding twelve months), applied after city/county utility users' taxes and before franchise fees. Needs month-conditional rider support the engine does not have.\n- Single Phase Service credit, -$9.30/month — Sheet 4/5 Rates, Special Condition 7. Conditional on the account being single-phase-metered; ServiceAttributes has no phase field yet.\n- Voltage Discounts (Facilities/TRD/Energy), tiered from 2 kV to 220 kV — Sheet 4/5 Rates, Special Condition 8. Every tier starts at 2 kV; a v1 customer at standard secondary voltage (<2 kV) gets no discount at all, so this is expected to be irrelevant for the target audience, not merely unmodeled.\n- CARE Discount (32.5%) and Food Bank Discount (20%) — Sheet 12/20, Special Conditions 11 and 16. Both require an enrollment/eligibility declaration form; no such account flag exists yet.\n- City/county Utility Users' Tax and franchise fees — NOT part of this schedule at all (Sheet 13 only references their existence and ordering relative to the Climate Credit). These are jurisdiction-specific and must come from a separate, city-specific rider once the customer's city is known.\n\nBILLING DEMAND ROUNDING — Sheet 11, Special Condition 6: \"The Billing Demand shall be the kW of Maximum Demand, determined to the nearest kW.\" The engine currently does NOT round a demand charge's billed kW to an integer before applying the rate; it only rounds the resulting DOLLAR amount to cents. This is a real discrepancy against real bills and needs an engine change (a rounding step on billedKw), not a data fill — flagged in PENDING.md, not implemented here.",
+  "notes": "Transcribed directly from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf (21 pages) by Claude. Bundled Service only \u2014 Direct Access and CCA Service customers pay Delivery per this record but Generation per their own provider (Sheet 12, Special Condition 12), so the \"generation\"-component lines here do not apply to them (CLAUDE.md: be explicit about which component a recommendation affects).\n\nIMPORTANT CORRECTION to earlier secondary-source-based assumption: Option E is NOT \"FRD only, no TRD.\" Its DELIVERY-side Time Related Demand rate is $0.00/kW (so no delivery TRD line is billed \u2014 omitted here rather than included as a permanent $0 line), but a NONZERO GENERATION-side time-related demand rate still applies for Bundled Service Customers: $5.65/kW Summer On-Peak, $2.18/kW Winter Mid-Peak (Sheet 5 Rates table, UG column). So Option E DOES have a real, billable time-related demand charge \u2014 just only on the generation component, not delivery. This changes the structural framing used in packages/rating-engine/test/option-structure.test.ts and PENDING.md, both written before this PDF was read.\n\nKNOWN BUT NOT MODELED (all require account/election-conditional logic this schema does not yet support \u2014 flagged in PENDING.md, not silently dropped):\n- TOU Option Meter Charge (RTEM), $40.79/meter/month \u2014 Sheet 4/5 Rates, Special Condition 2. Only applies if the customer elects an RTEM meter.\n- California Climate Credit, -$36.00/meter \u2014 Sheet 13, Special Condition 13. Applied ONLY on April and October bills, only for \"Small Business Customers\" (billing demand did not exceed 20 kW in more than three of the preceding twelve months), applied after city/county utility users' taxes and before franchise fees. Needs month-conditional rider support the engine does not have.\n- Single Phase Service credit, -$9.30/month \u2014 Sheet 4/5 Rates, Special Condition 7. Conditional on the account being single-phase-metered; ServiceAttributes has no phase field yet.\n- Voltage Discounts (Facilities/TRD/Energy), tiered from 2 kV to 220 kV \u2014 Sheet 4/5 Rates, Special Condition 8. Every tier starts at 2 kV; a v1 customer at standard secondary voltage (<2 kV) gets no discount at all, so this is expected to be irrelevant for the target audience, not merely unmodeled.\n- CARE Discount (32.5%) and Food Bank Discount (20%) \u2014 Sheet 12/20, Special Conditions 11 and 16. Both require an enrollment/eligibility declaration form; no such account flag exists yet.\n- City/county Utility Users' Tax and franchise fees \u2014 NOT part of this schedule at all (Sheet 13 only references their existence and ordering relative to the Climate Credit). These are jurisdiction-specific and must come from a separate, city-specific rider once the customer's city is known.\n\nBILLING DEMAND ROUNDING \u2014 Sheet 11, Special Condition 6: \"The Billing Demand shall be the kW of Maximum Demand, determined to the nearest kW.\" The engine currently does NOT round a demand charge's billed kW to an integer before applying the rate; it only rounds the resulting DOLLAR amount to cents. This is a real discrepancy against real bills and needs an engine change (a rounding step on billedKw), not a data fill \u2014 flagged in PENDING.md, not implemented here.",
   "provenance": {
     "sourceUrl": "https://www.sce.com/regulatory/tariff-books/rate-pricing-choices",
     "sheetRevision": "Revised Cal. P.U.C. Sheet No. 91222-E (Sheet 5 of Schedule TOU-GS-2), cancelling Revised Cal. P.U.C. Sheet No. 90963-E. Other fields on this record cite their own sheet number individually (Sheet 1 applicability, Sheet 8-9 TOU periods/seasons/holidays, Sheet 11 demand measurement) since those sheets carry different revision numbers and effective dates than the Rates sheet.",
@@ -14,7 +14,7 @@
     "supersededDate": null,
     "verifiedAt": "2026-07-30T00:00:00Z",
     "verifiedBy": "PENDING HUMAN REVIEW: transcribed by Claude directly from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf (Advice 5829-E, submitted May 27 2026, effective Jun 1 2026, for the Rates sheet specifically). Every numeric field cites its exact sheet and row. This has NOT yet been cross-checked by a human against the PDF and should not feed a real customer bill until it has.",
-    "transcriptionNotes": "sourceUrl is SCE's general tariff-books portal, not a confirmed deep link to this exact PDF — the committed PDF at fixtures/tariff-sheets/ is the authoritative artifact regardless. Two ambiguous natural-language readings are flagged inline on eligibility.demandRules (see their citations) rather than silently resolved."
+    "transcriptionNotes": "sourceUrl is SCE's general tariff-books portal, not a confirmed deep link to this exact PDF \u2014 the committed PDF at fixtures/tariff-sheets/ is the authoritative artifact regardless. Two ambiguous natural-language readings are flagged inline on eligibility.demandRules (see their citations) rather than silently resolved."
   },
   "eligibility": {
     "voltageLevels": [
@@ -36,7 +36,7 @@
         "windowMonths": 12,
         "windowIncludesCurrentMonth": false,
         "transferTo": "TOU-GS-3",
-        "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 1 — Applicability: \"The Customer whose monthly Maximum Demand, in the opinion of SCE, is expected to reach 200 kW or has reached 200 kW for any three months during the preceding 12 months is ineligible for service under this Schedule. Effective with the date of ineligibility, the Customer's account shall be transferred to Schedule TOU-GS-3.\" windowIncludesCurrentMonth=false is Claude's reading of the word \"preceding\" (before the current month) — an interpretation of ambiguous natural language, not a transcribed number. PLEASE CONFIRM: does the month being billed count toward the three, or only the twelve months strictly before it?."
+        "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 1 \u2014 Applicability: \"The Customer whose monthly Maximum Demand, in the opinion of SCE, is expected to reach 200 kW or has reached 200 kW for any three months during the preceding 12 months is ineligible for service under this Schedule. Effective with the date of ineligibility, the Customer's account shall be transferred to Schedule TOU-GS-3.\" windowIncludesCurrentMonth=false is Claude's reading of the word \"preceding\" (before the current month) \u2014 an interpretation of ambiguous natural language, not a transcribed number. PLEASE CONFIRM: does the month being billed count toward the three, or only the twelve months strictly before it?."
       },
       {
         "kind": "demand-at-or-below-threshold-for-n-consecutive-months",
@@ -46,7 +46,7 @@
         "monthCount": 12,
         "windowIncludesCurrentMonth": true,
         "transferTo": "TOU-GS-1",
-        "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 1 — Applicability: \"Any Customer served under this Schedule whose monthly Maximum Demand has registered 20 kW or less for 12 consecutive months will be transferred to Schedule TOU-GS-1.\" windowIncludesCurrentMonth=true is Claude's reading: unlike the 200 kW rule above, this sentence has no \"preceding\" qualifier, so the most recently billed month is read as the 12th of the 12 consecutive — an interpretation, not a transcribed number. PLEASE CONFIRM.."
+        "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 1 \u2014 Applicability: \"Any Customer served under this Schedule whose monthly Maximum Demand has registered 20 kW or less for 12 consecutive months will be transferred to Schedule TOU-GS-1.\" windowIncludesCurrentMonth=true is Claude's reading: unlike the 200 kW rule above, this sentence has no \"preceding\" qualifier, so the most recently billed month is read as the 12th of the 12 consecutive \u2014 an interpretation, not a transcribed number. PLEASE CONFIRM.."
       },
       {
         "kind": "expected-demand-at-or-above-threshold",
@@ -54,14 +54,14 @@
         "label": "Expected to reach 200 kW",
         "thresholdKw": 200,
         "transferTo": "TOU-GS-3",
-        "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 1 — Applicability: \"The Customer whose monthly Maximum Demand, in the opinion of SCE, is expected to reach 200 kW... is ineligible for service under this Schedule... transferred to Schedule TOU-GS-3.\"."
+        "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 1 \u2014 Applicability: \"The Customer whose monthly Maximum Demand, in the opinion of SCE, is expected to reach 200 kW... is ineligible for service under this Schedule... transferred to Schedule TOU-GS-3.\"."
       }
     ],
     "notes": "VERIFIED from Sheet 1 (Applicability). voltageLevels is NOT restricted in the Applicability paragraph, and the Rates section prices voltage discounts up to 220 kV, so all four levels are listed rather than assuming secondary-only."
   },
   "demandMeasurement": {
     "windowMinutes": 15,
-    "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 11 — Special Condition 5 (Maximum Demand): \"The Maximum Demand for each TOU Period shall [be] the measured maximum average kilowatt (kW) input... during any 15-minute metered interval... Where the demand is intermittent or subject to violent fluctuations, a 5-minute interval may be used.\" The 5-minute case is an account-level determination (ServiceAttributes.demandWindowMinutesOverride), not schedule data.."
+    "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 11 \u2014 Special Condition 5 (Maximum Demand): \"The Maximum Demand for each TOU Period shall [be] the measured maximum average kilowatt (kW) input... during any 15-minute metered interval... Where the demand is intermittent or subject to violent fluctuations, a 5-minute interval may be used.\" The 5-minute case is an account-level determination (ServiceAttributes.demandWindowMinutesOverride), not schedule data.."
   },
   "seasons": [
     {
@@ -75,7 +75,7 @@
         "month": 9,
         "day": 30
       },
-      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 9 — Special Condition 1 (continued): \"The summer season shall commence at 12:00 a.m. on June 1 and continue until 12:00 a.m. on October 1 of each year.\"."
+      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 9 \u2014 Special Condition 1 (continued): \"The summer season shall commence at 12:00 a.m. on June 1 and continue until 12:00 a.m. on October 1 of each year.\"."
     },
     {
       "id": "winter",
@@ -88,7 +88,7 @@
         "month": 5,
         "day": 31
       },
-      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 9 — Special Condition 1 (continued): \"The winter season shall commence at 12:00 a.m. on October 1 of each year and continue until 12:00 a.m. on June 1 of the following year.\"."
+      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 9 \u2014 Special Condition 1 (continued): \"The winter season shall commence at 12:00 a.m. on October 1 of each year and continue until 12:00 a.m. on June 1 of the following year.\"."
     }
   ],
   "touPeriods": [
@@ -246,7 +246,7 @@
   ],
   "holidayTreatment": {
     "mapsToDayType": "sun",
-    "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 8 — Special Condition 1 table gives ONE combined \"Weekends and Holidays\" column per season, identical for Saturday and Sunday, so a holiday takes the weekend schedule; mapping to 'sun' vs 'sat' is equivalent here since both carry the same touRules. VERIFIED — not the \"off-peak around the clock\" reading.."
+    "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 8 \u2014 Special Condition 1 table gives ONE combined \"Weekends and Holidays\" column per season, identical for Saturday and Sunday, so a holiday takes the weekend schedule; mapping to 'sun' vs 'sat' is equivalent here since both carry the same touRules. VERIFIED \u2014 not the \"off-peak around the clock\" reading.."
   },
   "energyCharges": [
     {
@@ -259,7 +259,7 @@
         "kind": "flat",
         "ratePerKwh": 0.48845
       },
-      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 — Rates table, \"Summer - On-Peak\" row, Delivery (Total) column.."
+      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 \u2014 Rates table, \"Summer - On-Peak\" row, Delivery (Total) column.."
     },
     {
       "id": "energy-summer-on-peak-generation",
@@ -271,7 +271,7 @@
         "kind": "flat",
         "ratePerKwh": 0.36927
       },
-      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 — Rates table, \"Summer - On-Peak\" row, Generation (UG) column.."
+      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 \u2014 Rates table, \"Summer - On-Peak\" row, Generation (UG) column.."
     },
     {
       "id": "energy-summer-mid-peak-delivery",
@@ -283,7 +283,7 @@
         "kind": "flat",
         "ratePerKwh": 0.27514
       },
-      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 — Rates table, \"Summer - Mid-Peak\" row, Delivery (Total) column.."
+      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 \u2014 Rates table, \"Summer - Mid-Peak\" row, Delivery (Total) column.."
     },
     {
       "id": "energy-summer-mid-peak-generation",
@@ -295,7 +295,7 @@
         "kind": "flat",
         "ratePerKwh": 0.09989
       },
-      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 — Rates table, \"Summer - Mid-Peak\" row, Generation (UG) column.."
+      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 \u2014 Rates table, \"Summer - Mid-Peak\" row, Generation (UG) column.."
     },
     {
       "id": "energy-summer-off-peak-delivery",
@@ -307,7 +307,7 @@
         "kind": "flat",
         "ratePerKwh": 0.16267
       },
-      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 — Rates table, \"Summer - Off-Peak\" row, Delivery (Total) column.."
+      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 \u2014 Rates table, \"Summer - Off-Peak\" row, Delivery (Total) column.."
     },
     {
       "id": "energy-summer-off-peak-generation",
@@ -319,7 +319,7 @@
         "kind": "flat",
         "ratePerKwh": 0.06409
       },
-      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 — Rates table, \"Summer - Off-Peak\" row, Generation (UG) column.."
+      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 \u2014 Rates table, \"Summer - Off-Peak\" row, Generation (UG) column.."
     },
     {
       "id": "energy-winter-mid-peak-delivery",
@@ -331,7 +331,7 @@
         "kind": "flat",
         "ratePerKwh": 0.07539
       },
-      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 — Rates table, \"Winter - Mid-Peak\" row, Delivery (Total) column.."
+      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 \u2014 Rates table, \"Winter - Mid-Peak\" row, Delivery (Total) column.."
     },
     {
       "id": "energy-winter-mid-peak-generation",
@@ -343,7 +343,7 @@
         "kind": "flat",
         "ratePerKwh": 0.1153
       },
-      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 — Rates table, \"Winter - Mid-Peak\" row, Generation (UG) column.."
+      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 \u2014 Rates table, \"Winter - Mid-Peak\" row, Generation (UG) column.."
     },
     {
       "id": "energy-winter-off-peak-delivery",
@@ -355,7 +355,7 @@
         "kind": "flat",
         "ratePerKwh": 0.05312
       },
-      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 — Rates table, \"Winter - Off-Peak\" row, Delivery (Total) column.."
+      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 \u2014 Rates table, \"Winter - Off-Peak\" row, Delivery (Total) column.."
     },
     {
       "id": "energy-winter-off-peak-generation",
@@ -367,7 +367,7 @@
         "kind": "flat",
         "ratePerKwh": 0.0744
       },
-      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 — Rates table, \"Winter - Off-Peak\" row, Generation (UG) column.."
+      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 \u2014 Rates table, \"Winter - Off-Peak\" row, Generation (UG) column.."
     },
     {
       "id": "energy-winter-super-off-peak-delivery",
@@ -379,7 +379,7 @@
         "kind": "flat",
         "ratePerKwh": 0.06891
       },
-      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 — Rates table, \"Winter - Super-Off-Peak\" row, Delivery (Total) column.."
+      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 \u2014 Rates table, \"Winter - Super-Off-Peak\" row, Delivery (Total) column.."
     },
     {
       "id": "energy-winter-super-off-peak-generation",
@@ -391,7 +391,7 @@
         "kind": "flat",
         "ratePerKwh": 0.03907
       },
-      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 — Rates table, \"Winter - Super-Off-Peak\" row, Generation (UG) column.."
+      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 \u2014 Rates table, \"Winter - Super-Off-Peak\" row, Generation (UG) column.."
     }
   ],
   "demandCharges": {
@@ -404,7 +404,7 @@
         "component": "transmission",
         "ratePerKw": 4.9,
         "measuredOver": "billing-period",
-        "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 — Rates table, \"Facilities Related Demand Charge - $/kW\", Trans column.."
+        "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 \u2014 Rates table, \"Facilities Related Demand Charge - $/kW\", Trans column.."
       },
       {
         "kind": "facilities",
@@ -414,7 +414,7 @@
         "component": "delivery",
         "ratePerKw": 10.93,
         "measuredOver": "billing-period",
-        "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 — Rates table, \"Facilities Related Demand Charge - $/kW\", Distrbtn column.."
+        "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 \u2014 Rates table, \"Facilities Related Demand Charge - $/kW\", Distrbtn column.."
       }
     ],
     "timeRelated": [
@@ -427,7 +427,8 @@
         "component": "generation",
         "ratePerKw": 5.65,
         "measuredOver": "billing-period",
-        "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 — Rates table, \"Time Related Demand Charge - Summer Season, On-Peak\" row, UG column.."
+        "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 \u2014 Rates table, \"Time Related Demand Charge - Summer Season, On-Peak\" row, UG column. weekdaysOnly=false: this charge's own TOU period (summer On-Peak) is already weekday-only per Sheet 8's table (On-Peak is N/A on weekends/holidays in every season), so there is no separate restriction to apply -- and, consistent with that, the rate table carries no \"(Weekdays)\" label on this row, unlike the winter Mid-Peak row. See the winter Mid-Peak charge's citation for the genuine ambiguity that does not apply here.",
+        "weekdaysOnly": false
       },
       {
         "kind": "time-related",
@@ -438,7 +439,8 @@
         "component": "generation",
         "ratePerKw": 2.18,
         "measuredOver": "billing-period",
-        "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 — Rates table, \"Time Related Demand Charge - Winter Season, Mid-Peak\" row, UG column.."
+        "citation": "GENUINELY AMBIGUOUS between two sections of fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf. Sheet 8, Special Condition 1's TOU period table defines winter Mid-Peak as 4pm-9pm on EVERY day, weekday or weekend/holiday alike (the table shows \"4 p.m. - 9 p.m.\" under both the Weekday-Winter and Weekend/Holiday-Winter cells for Mid-Peak). But Sheet 4 (Option D) and Sheet 5 (Option E) both label the winter TRD rate row itself \"Mid-peak - Weekdays (4-9pm)\", and the corresponding voltage-discount row \"Voltage Discount, Winter Weekday Mid-Peak\" -- the SAME weekday-specific label, on both options, appearing nowhere else (summer On-Peak's TRD row carries no such label, because its period is already weekday-only, so the label would be redundant there -- its selective presence here reads as deliberate). Special Condition 6 (Billing Demand) does not resolve this: it says TRD is measured \"during ... each of the TOU Periods\" with no weekday carve-out of its own, so it is silent on whether the rate table's narrower label overrides the period's own definition. weekdaysOnly=true is the chosen interpretation (matching the rate table's specific, twice-repeated label over the general period table), NOT a resolved fact -- the engine computes both readings and warns if they would measure a different peak. PLEASE CONFIRM which section governs.",
+        "weekdaysOnly": true
       }
     ]
   },
@@ -451,7 +453,7 @@
       "basis": "per-meter-per-month",
       "amount": 268.43,
       "component": "delivery",
-      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 — Rates table, \"Customer Charge - $/Meter/Month\" row, Distrbtn/Total column (268.43, identical on both options).."
+      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 \u2014 Rates table, \"Customer Charge - $/Meter/Month\" row, Distrbtn/Total column (268.43, identical on both options).."
     },
     "meterCharge": null,
     "dailyMinimumCharge": null
@@ -467,7 +469,7 @@
         "seasonIds": null,
         "periodIds": null
       },
-      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 — Rates table, \"Fixed Recovery Charge - $/kWh\". Sheet 21, Special Condition 18: a non-bypassable charge recovering wildfire-mitigation recovery bonds, collected by SCE on behalf of a Special Purpose Entity — classified here as component \"delivery\" since it is unrelated to generation source and applies regardless of Bundled/CCA/DA status.."
+      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 \u2014 Rates table, \"Fixed Recovery Charge - $/kWh\". Sheet 21, Special Condition 18: a non-bypassable charge recovering wildfire-mitigation recovery bonds, collected by SCE on behalf of a Special Purpose Entity \u2014 classified here as component \"delivery\" since it is unrelated to generation source and applies regardless of Bundled/CCA/DA status.."
     },
     {
       "basis": "per-kwh",
@@ -479,7 +481,7 @@
         "seasonIds": null,
         "periodIds": null
       },
-      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 — Rates table footnote 12: \"recovers the net cost associated with system reliability procurement... on behalf of customers whose generation services are provided by certain Electric Service Providers or Community Choice Aggregators.\" Classified as cost-responsibility-surcharge (analogous to PCIA/CRS) since it is specifically tied to a customer's choice of non-utility generation provider — Claude's classification judgment, not a transcribed number; flagged for confirmation.."
+      "citation": "Verified from fixtures/tariff-sheets/ELECTRIC_SCHEDULES_TOU-GS-2.pdf, Sheet 5 \u2014 Rates table footnote 12: \"recovers the net cost associated with system reliability procurement... on behalf of customers whose generation services are provided by certain Electric Service Providers or Community Choice Aggregators.\" Classified as cost-responsibility-surcharge (analogous to PCIA/CRS) since it is specifically tied to a customer's choice of non-utility generation provider \u2014 Claude's classification judgment, not a transcribed number; flagged for confirmation.."
     }
   ],
   "minimumBill": null,

@@ -199,6 +199,11 @@ export function makeSyntheticTariff(overrides: Partial<Tariff> = {}): Tariff {
           component: 'delivery',
           ratePerKw: 12,
           measuredOver: 'billing-period',
+          // The synthetic on-peak period is already weekday-only by its own
+          // touRules, so this is a behavior-neutral default, not a claim about
+          // any real schedule. Tests exercising weekdaysOnly's actual effect
+          // build their own tariff with a weekend-spanning period.
+          weekdaysOnly: false,
           citation: SYNTHETIC,
         },
       ],
