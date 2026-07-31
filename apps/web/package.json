@@ -1,0 +1,29 @@
+{
+  "name": "@boring/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "cd ../.. && pnpm run build && cd apps/web && next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@boring/extraction": "workspace:*",
+    "@boring/load-shape-estimator": "workspace:*",
+    "@boring/rating-engine": "workspace:*",
+    "@boring/tariff-schema": "workspace:*",
+    "@vercel/blob": "^2.6.1",
+    "luxon": "^3.7.2",
+    "next": "^16.2.12",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@types/luxon": "^3.7.1",
+    "@types/node": "^22.20.1",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "typescript": "^5.9.3"
+  }
+}

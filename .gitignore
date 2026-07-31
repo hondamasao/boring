@@ -4,3 +4,15 @@ dist/
 coverage/
 .DS_Store
 *.log
+
+# Next.js build output and local upload storage — the beta's uploaded bills
+# are real customer data and must never be committed.
+apps/web/.next/
+apps/web/.data/
+apps/web/next-env.d.ts
+
+# Local secrets (e.g. a real ANTHROPIC_API_KEY for local testing) — these
+# belong in the hosting platform's environment variables, never in the repo.
+.env
+.env.local
+.env*.local

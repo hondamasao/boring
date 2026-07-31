@@ -79,6 +79,32 @@ export type FacilitiesDemandCharge = z.infer<typeof FacilitiesDemandCharge>;
  *
  * `seasonId` and `periodId` are both required — a time-related charge that does
  * not name its period is meaningless.
+ *
+ * `weekdaysOnly` exists because a real sheet can say two different things about
+ * the same charge: SCE's TOU-GS-2 defines its winter Mid-Peak TOU PERIOD as
+ * applying on every day including weekends and holidays (Special Condition 1's
+ * table), but the RATE TABLE row pricing that period's time-related demand is
+ * labeled "Mid-peak - Weekdays (4-9pm)" — a narrower restriction than the period
+ * itself, appearing consistently on both Option D and Option E and on the
+ * corresponding voltage-discount row, but absent from every other TRD row
+ * (including summer On-Peak, whose period is already weekday-only by definition,
+ * so the label would be redundant there). That pattern reads as deliberate, not
+ * a typo, but Special Condition 6 — which defines "Billing Demand" — says only
+ * that TRD is "for the kW of Maximum Demand recorded during ... each of the TOU
+ * Periods," with no weekday carve-out. The document does not resolve which
+ * section controls.
+ *
+ * Required, no default, same discipline as
+ * `EligibilityRule.windowIncludesCurrentMonth`: a citable, chosen interpretation
+ * is recorded, and the engine separately computes what the OTHER reading would
+ * have measured, surfacing a warning whenever the two disagree rather than
+ * silently committing to one.
+ *
+ * `false` means: use the period's own day-type membership, no further
+ * restriction. `true` means: additionally restrict the search to weekday
+ * windows (calendar mon-fri, or a holiday's mapped day type if it resolves to a
+ * weekday — a holiday rated as a weekend day is excluded either way, consistent
+ * with treating it as weekend throughout).
  */
 export const TimeRelatedDemandCharge = z
   .object({
@@ -91,6 +117,7 @@ export const TimeRelatedDemandCharge = z
     component: Component,
     ratePerKw: Rate,
     measuredOver: MeasuredOver,
+    weekdaysOnly: z.boolean(),
     citation: Citation,
   })
   .strict();

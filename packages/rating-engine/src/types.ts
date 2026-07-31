@@ -83,6 +83,15 @@ export interface DemandDetermination {
     priorPeakKw: number;
     floorKw: number;
   };
+  /** Set only for a time-related charge whose `weekdaysOnly` reading is
+   * genuinely contested by the tariff sheet AND the two readings would have
+   * measured a different peak this period. Null whenever the charge has no
+   * such ambiguity, or the two readings happen to agree. */
+  weekdayAmbiguity: null | {
+    chosenWeekdaysOnly: boolean;
+    chosenPeakKw: number;
+    otherPeakKw: number;
+  };
 }
 
 /** A run of consecutive local days in one season. */

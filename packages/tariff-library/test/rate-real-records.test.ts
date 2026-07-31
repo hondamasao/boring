@@ -47,6 +47,26 @@ function julyProfile(): LoadProfile {
   return { timezone: ZONE, intervalMinutes: 15, readings };
 }
 
+/** A December billing period with a bigger Saturday mid-peak spike than any
+ * weekday one — built specifically to exercise the winter TRD weekday
+ * ambiguity (see weekday-ambiguity.test.ts for the mechanism itself) against
+ * the REAL Option D record, not just a synthetic tariff. */
+function decemberProfile(): LoadProfile {
+  const readings: LoadProfile['readings'] = [];
+  let cursor = DateTime.fromISO('2026-12-01', { zone: ZONE }).startOf('day');
+  const end = DateTime.fromISO('2027-01-01', { zone: ZONE }).startOf('day');
+  while (cursor < end) {
+    const hour = cursor.hour;
+    const inMidPeakWindow = hour >= 16 && hour < 21;
+    let kw = 8;
+    if (inMidPeakWindow && cursor.weekday <= 5) kw = 40; // weekday mid-peak
+    if (inMidPeakWindow && cursor.weekday === 6) kw = 60; // Saturday mid-peak, bigger
+    readings.push({ start: cursor.toISO({ suppressMilliseconds: true }) as string, kwh: kw * 0.25 });
+    cursor = cursor.plus({ minutes: 15 });
+  }
+  return { timezone: ZONE, intervalMinutes: 15, readings };
+}
+
 const holidayCalendar = { utility: 'SCE', source: 'test', observedDates: ['2026-07-04'] };
 const context = { holidayCalendar, demandHistory: { entries: [] }, serviceAttributes: {} };
 const period = { start: '2026-07-01', end: '2026-08-01', timezone: ZONE, meterCount: 1 };
@@ -116,5 +136,30 @@ describe('Option E: the corrected structural difference', () => {
     // it is the whole point of an options menu existing.
     const billD = rate(profile, optionD, period, context);
     expect(bill.total).not.toBe(billD.total);
+  });
+});
+
+describe('Option D: the winter TRD weekday ambiguity fires on the real record', () => {
+  // Both option-d and option-e now carry weekdaysOnly: true on their winter
+  // Mid-Peak TRD charge — a chosen interpretation of genuinely conflicting
+  // sections of the sheet (see the charge's own citation and
+  // weekday-ambiguity.test.ts). This proves the mechanism actually engages on
+  // the real, committed record, not only on a synthetic one built to exercise it.
+  const decPeriod = { start: '2026-12-01', end: '2027-01-01', timezone: ZONE, meterCount: 1 };
+  const bill = rate(decemberProfile(), optionD, decPeriod, context);
+
+  it('bills off the weekday peak (40 kW), excluding the larger Saturday one (60 kW)', () => {
+    const line = bill.lines.find((l) => l.sourceId === 'trd-winter-mid-peak-delivery');
+    expect(line?.quantity).toBe(40);
+  });
+
+  it('reports the ambiguity on the determination and warns to verify against SCE', () => {
+    const d = bill.diagnostics.demandDeterminations.find(
+      (det) => det.chargeId === 'trd-winter-mid-peak-delivery',
+    );
+    expect(d?.weekdayAmbiguity).toEqual({ chosenWeekdaysOnly: true, chosenPeakKw: 40, otherPeakKw: 60 });
+    expect(
+      bill.warnings.some((w) => w.includes('trd-winter-mid-peak-delivery') && w.includes('Verify against SCE')),
+    ).toBe(true);
   });
 });

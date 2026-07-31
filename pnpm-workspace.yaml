@@ -1,12 +1,13 @@
 packages:
   - 'packages/*'
+  - 'apps/*'
 
-# Phase 1 is tariff-schema + rating-engine only.
+# apps/web (the beta upload -> confirm -> report flow) was started ahead of the
+# original "build LAST" plan, deliberately, to get real bills instead of chasing
+# a single contact — see packages/tariff-library/PENDING.md for what's still
+# unverified in the money path this app calls into.
 #
 # Reserved for later phases — deliberately NOT created yet:
-#   apps/web              Next.js app — build LAST (CLAUDE.md: no web app work
-#                         until the rating engine passes its golden tests)
-#   packages/extraction   vision -> schema; the ONLY package allowed to call an LLM
 #   packages/greenbutton  Green Button CSV + ESPI XML parsers
 onlyBuiltDependencies:
   - esbuild

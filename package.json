@@ -8,8 +8,8 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "tsc -b packages/tariff-schema packages/rating-engine packages/fixture-harness",
-    "typecheck": "tsc -b packages/tariff-schema packages/rating-engine packages/fixture-harness",
+    "build": "tsc -b packages/tariff-schema packages/rating-engine packages/fixture-harness packages/extraction packages/load-shape-estimator",
+    "typecheck": "tsc -b packages/tariff-schema packages/rating-engine packages/fixture-harness packages/extraction packages/load-shape-estimator",
     "test": "vitest run",
     "test:watch": "vitest",
     "check": "pnpm run typecheck && pnpm run test"
