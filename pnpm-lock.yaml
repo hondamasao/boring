@@ -26,6 +26,12 @@ importers:
       '@boring/load-shape-estimator':
         specifier: workspace:*
         version: link:../../packages/load-shape-estimator
+      '@boring/rating-engine':
+        specifier: workspace:*
+        version: link:../../packages/rating-engine
+      '@boring/tariff-schema':
+        specifier: workspace:*
+        version: link:../../packages/tariff-schema
       luxon:
         specifier: ^3.7.2
         version: 3.7.2

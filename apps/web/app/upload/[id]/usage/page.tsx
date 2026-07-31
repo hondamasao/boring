@@ -1,37 +1,9 @@
+import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
-import { estimateLoadProfile, type LoadShapeEstimate } from '@boring/load-shape-estimator';
+import type { LoadShapeEstimate } from '@boring/load-shape-estimator';
 import { isValidUploadId, readManifest } from '../../../../lib/storage';
-import { readCachedExtraction, readConfirmation } from '../../../../lib/extraction-storage';
-import { readCachedEstimate, writeCachedEstimate } from '../../../../lib/estimate-storage';
-import { billToEstimatorInput } from '../../../../lib/usage-estimate';
-
-type BillEstimate =
-  | { filename: string; status: 'ok'; estimate: LoadShapeEstimate }
-  | { filename: string; status: 'error'; message: string };
-
-async function getOrEstimate(uploadId: string, filename: string): Promise<BillEstimate> {
-  const cached = await readCachedEstimate(uploadId, filename);
-  if (cached !== null) return { filename, status: 'ok', estimate: cached };
-
-  const bill = await readCachedExtraction(uploadId, filename);
-  if (bill === null) {
-    return { filename, status: 'error', message: 'No confirmed extraction found for this bill.' };
-  }
-
-  const converted = billToEstimatorInput(bill);
-  if (!converted.ok) {
-    return { filename, status: 'error', message: converted.reason };
-  }
-
-  try {
-    const estimate = estimateLoadProfile(converted.input);
-    await writeCachedEstimate(uploadId, filename, estimate);
-    return { filename, status: 'ok', estimate };
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    return { filename, status: 'error', message };
-  }
-}
+import { readConfirmation } from '../../../../lib/extraction-storage';
+import { getOrEstimateBill, type BillEstimate } from '../../../../lib/bill-usage';
 
 function methodLabel(method: LoadShapeEstimate['method']): string {
   return method === 'fit-energy-and-peak'
@@ -97,7 +69,7 @@ export default async function UsagePage({ params }: { params: Promise<{ id: stri
   if (manifest === null) notFound();
   if (confirmation === null) redirect(`/upload/${id}/review`);
 
-  const results = await Promise.all(confirmation.bills.map((filename) => getOrEstimate(id, filename)));
+  const results = await Promise.all(confirmation.bills.map((filename) => getOrEstimateBill(id, filename)));
   const anyOk = results.some((r) => r.status === 'ok');
 
   return (
@@ -131,7 +103,9 @@ export default async function UsagePage({ params }: { params: Promise<{ id: stri
       ))}
 
       {anyOk ? (
-        <p style={{ color: '#666' }}>Next: generating your rate comparison report — not built yet.</p>
+        <p>
+          <Link href={`/upload/${id}/report`}>See your rate comparison report →</Link>
+        </p>
       ) : (
         <p style={{ color: '#b00020', fontWeight: 'bold' }}>No bill could be estimated.</p>
       )}

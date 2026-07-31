@@ -11,6 +11,8 @@
   "dependencies": {
     "@boring/extraction": "workspace:*",
     "@boring/load-shape-estimator": "workspace:*",
+    "@boring/rating-engine": "workspace:*",
+    "@boring/tariff-schema": "workspace:*",
     "luxon": "^3.7.2",
     "next": "^16.2.12",
     "react": "^19.2.8",
