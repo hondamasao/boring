@@ -1,45 +1,100 @@
+import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import type { BillLine } from '@boring/rating-engine';
+import { Progress } from '../../../../components/Progress';
 import { isValidUploadId, readManifest } from '../../../../lib/storage';
 import { readConfirmation } from '../../../../lib/extraction-storage';
 import { compareBillToOptions, type ExcludedBill, type MonthlyComparison } from '../../../../lib/compare-options';
+
+// The whole reason this field exists: a report holds one customer's real
+// bill totals, rate schedule, and dollar figures behind an unguessable
+// link. It must never be crawled, cached, or listed by a search engine.
+export const metadata: Metadata = {
+  title: 'Rate Comparison Report',
+  robots: { index: false, follow: false },
+};
 
 function formatUsd(n: number): string {
   return n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 }
 
-function LineTable({ lines }: { lines: BillLine[] }) {
+function LineLedger({ lines }: { lines: BillLine[] }) {
   return (
-    <table style={{ borderCollapse: 'collapse', fontSize: '0.9em' }}>
-      <tbody>
-        {lines.map((l) => (
-          <tr key={l.id}>
-            <td style={{ paddingRight: '1rem' }}>{l.description}</td>
-            <td style={{ textAlign: 'right' }}>{formatUsd(l.amount)}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <div className="stack" style={{ marginTop: '0.5rem' }}>
+      {lines.map((l) => (
+        <div className="ledger-row" key={l.id}>
+          <span className="ledger-label">{l.description}</span>
+          <span className="ledger-fill" aria-hidden="true" />
+          <span className="ledger-value">{formatUsd(l.amount)}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function onFileLabelFor(c: MonthlyComparison): string {
+  return c.onFileOption ? `Option ${c.onFileOption}` : c.onFileRaw ? `${c.onFileRaw} (unclear)` : 'Unknown';
+}
+
+function CheaperStamp({ cheaper }: { cheaper: MonthlyComparison['cheaper'] }) {
+  return (
+    <span className={`stamp ${cheaper === 'tie' ? 'stamp-neutral' : 'stamp-ok'}`}>
+      {cheaper === 'tie' ? 'Tie' : `Option ${cheaper}`}
+    </span>
   );
 }
 
 function MonthRow({ c }: { c: MonthlyComparison }) {
-  const onFileLabel = c.onFileOption
-    ? `Option ${c.onFileOption}`
-    : c.onFileRaw
-      ? `${c.onFileRaw} (couldn't tell D/E)`
-      : 'Unknown';
-
   return (
     <tr>
-      <td style={{ paddingRight: '1rem' }}>{c.monthLabel}</td>
-      <td style={{ textAlign: 'right', paddingRight: '1rem' }}>{formatUsd(c.billD.total)}</td>
-      <td style={{ textAlign: 'right', paddingRight: '1rem' }}>{formatUsd(c.billE.total)}</td>
-      <td style={{ paddingRight: '1rem' }}>{c.cheaper === 'tie' ? 'Tie' : `Option ${c.cheaper}`}</td>
-      <td style={{ textAlign: 'right', paddingRight: '1rem' }}>{formatUsd(c.deltaAbs)}</td>
-      <td style={{ paddingRight: '1rem' }}>{onFileLabel}</td>
-      <td style={{ textAlign: 'right' }}>{c.actualBilled !== null ? formatUsd(c.actualBilled) : '—'}</td>
+      <td style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{c.monthLabel}</td>
+      <td className="num">{formatUsd(c.billD.total)}</td>
+      <td className="num">{formatUsd(c.billE.total)}</td>
+      <td>
+        <CheaperStamp cheaper={c.cheaper} />
+      </td>
+      <td className="num">{formatUsd(c.deltaAbs)}</td>
+      <td className="small muted">{onFileLabelFor(c)}</td>
+      <td className="num">{c.actualBilled !== null ? formatUsd(c.actualBilled) : '—'}</td>
     </tr>
+  );
+}
+
+function MonthCard({ c }: { c: MonthlyComparison }) {
+  return (
+    <div className="month-card">
+      <div className="month-card-header">
+        <h3>{c.monthLabel}</h3>
+        <CheaperStamp cheaper={c.cheaper} />
+      </div>
+      <div className="stack">
+        <div className="ledger-row">
+          <span className="ledger-label">Option D</span>
+          <span className="ledger-fill" aria-hidden="true" />
+          <span className="ledger-value">{formatUsd(c.billD.total)}</span>
+        </div>
+        <div className="ledger-row">
+          <span className="ledger-label">Option E</span>
+          <span className="ledger-fill" aria-hidden="true" />
+          <span className="ledger-value">{formatUsd(c.billE.total)}</span>
+        </div>
+        <div className="ledger-row">
+          <span className="ledger-label">Difference</span>
+          <span className="ledger-fill" aria-hidden="true" />
+          <span className="ledger-value">{formatUsd(c.deltaAbs)}</span>
+        </div>
+        <div className="ledger-row ledger-row-stamped">
+          <span className="ledger-label">On file</span>
+          <span className="ledger-fill" aria-hidden="true" />
+          <span className="small muted">{onFileLabelFor(c)}</span>
+        </div>
+        <div className="ledger-row">
+          <span className="ledger-label">Actually billed</span>
+          <span className="ledger-fill" aria-hidden="true" />
+          <span className="ledger-value">{c.actualBilled !== null ? formatUsd(c.actualBilled) : '—'}</span>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -59,35 +114,35 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
     .filter((r): r is { status: 'excluded'; excluded: ExcludedBill } => r.status === 'excluded')
     .map((r) => r.excluded);
 
-  const BETA_NOTICE = (
-    <p
-      style={{
-        background: '#f5f5f5',
-        border: '1px solid #ddd',
-        borderRadius: 4,
-        padding: '1rem',
-        fontWeight: 'bold',
-      }}
-    >
-      This is a free beta tool. Estimates are based on your uploaded bill data and may include a load-shape estimate
-      rather than your exact usage. We&apos;re actively validating this against real customer bills — your data
-      helps us do that.
-    </p>
+  const betaNotice = (
+    <div className="notice notice-beta">
+      <p style={{ marginBottom: 0 }}>
+        <strong>This is a free beta tool.</strong>{' '}
+        Estimates are based on your uploaded bill data and may include a load-shape estimate
+        instead of your exact usage. We&apos;re actively validating this against real customer
+        bills, and your data helps us do that.
+      </p>
+    </div>
   );
 
   if (comparisons.length === 0) {
     return (
-      <main>
+      <main className="shell-main wide">
+        <Progress current={4} />
         <h1>Rate comparison report</h1>
-        {BETA_NOTICE}
-        <p style={{ color: '#b00020', fontWeight: 'bold' }}>None of your confirmed bills could be compared.</p>
-        <ul>
-          {excludedList.map((e) => (
-            <li key={e.filename}>
-              {e.filename.replace(/^\d+-/, '')}: {e.reason}
-            </li>
-          ))}
-        </ul>
+        {betaNotice}
+        <div className="notice notice-bad">
+          <p>
+            <strong>None of your confirmed bills could be compared.</strong>
+          </p>
+          <ul style={{ marginBottom: 0 }}>
+            {excludedList.map((e) => (
+              <li key={e.filename}>
+                {e.filename.replace(/^\d+-/, '')}: {e.reason}
+              </li>
+            ))}
+          </ul>
+        </div>
       </main>
     );
   }
@@ -110,13 +165,14 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   const first = comparisons[0]!;
 
   return (
-    <main>
+    <main className="shell-main wide">
+      <Progress current={4} />
       <h1>Rate comparison report</h1>
-      {BETA_NOTICE}
+      {betaNotice}
 
       {excludedList.length > 0 ? (
-        <div style={{ background: '#fff3cd', padding: '0.75rem', borderRadius: 4, marginBottom: '1rem' }}>
-          <p style={{ margin: 0 }}>
+        <div className="notice notice-warn">
+          <p>
             {excludedList.length} of your {confirmation.bills.length} confirmed bill
             {confirmation.bills.length === 1 ? '' : 's'} could not be compared:
           </p>
@@ -127,7 +183,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
               </li>
             ))}
           </ul>
-          <p style={{ margin: 0 }}>Everything below is based only on the remaining {monthsCount} bill(s).</p>
+          <p style={{ marginBottom: 0 }}>Everything below is based only on the remaining {monthsCount} bill(s).</p>
         </div>
       ) : null}
 
@@ -135,8 +191,8 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       {seasonalSplit ? (
         <p>
           It depends on your usage pattern: Option D was cheaper in {monthsCheaperD} month{monthsCheaperD === 1 ? '' : 's'}
-          {' '}and Option E was cheaper in {monthsCheaperE} month{monthsCheaperE === 1 ? '' : 's'} out of the {monthsCount}{' '}
-          you uploaded.{' '}
+          {' '}and Option E was cheaper in {monthsCheaperE} month{monthsCheaperE === 1 ? '' : 's'} out of the{' '}
+          {monthsCount} you uploaded.{' '}
           {overallCheaper === 'tie'
             ? 'Added up across all of them, the two options come out essentially even.'
             : `Added up across all of them, Option ${overallCheaper} comes out ahead overall by ${formatUsd(overallDelta)}.`}
@@ -149,19 +205,40 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
         </p>
       )}
 
-      <p>
-        Across your {monthsCount} confirmed bill{monthsCount === 1 ? '' : 's'}: Option D totals {formatUsd(totalD)},
-        Option E totals {formatUsd(totalE)}.{' '}
+      <div className="card" style={{ background: 'var(--surface-sunk)', borderStyle: 'dashed' }}>
+        <div className="stack">
+          <div className="ledger-row">
+            <span className="ledger-label">Option D, across your {monthsCount} bill{monthsCount === 1 ? '' : 's'}</span>
+            <span className="ledger-fill" aria-hidden="true" />
+            <span className="ledger-value">{formatUsd(totalD)}</span>
+          </div>
+          <div className="ledger-row">
+            <span className="ledger-label">Option E, across your {monthsCount} bill{monthsCount === 1 ? '' : 's'}</span>
+            <span className="ledger-fill" aria-hidden="true" />
+            <span className="ledger-value">{formatUsd(totalE)}</span>
+          </div>
+          <div className="ledger-row ledger-total">
+            <span className="ledger-label">
+              {scaledAnnualDelta !== null ? 'Scaled to a full year' : 'Real annual difference'}
+            </span>
+            <span className="ledger-fill" aria-hidden="true" />
+            <span className="ledger-value">
+              {formatUsd(scaledAnnualDelta ?? overallDelta)}
+              {scaledAnnualDelta !== null ? '/yr*' : '/yr'}
+            </span>
+          </div>
+        </div>
         {scaledAnnualDelta !== null ? (
-          <>
-            If this pattern holds for a full year, that&apos;s roughly {formatUsd(scaledAnnualDelta)}/year — scaled up
-            from {monthsCount} month{monthsCount === 1 ? '' : 's'}, not a real annual figure. Upload all 12 bills for
-            one.
-          </>
+          <p className="small muted" style={{ marginTop: '0.75rem', marginBottom: 0 }}>
+            * Scaled up from {monthsCount} month{monthsCount === 1 ? '' : 's'} of confirmed bills, not a real annual
+            figure. Upload all 12 bills for one.
+          </p>
         ) : (
-          <>That&apos;s a real annual figure, since you uploaded a full 12 months.</>
+          <p className="small muted" style={{ marginTop: '0.75rem', marginBottom: 0 }}>
+            A real annual figure, since you uploaded a full 12 months.
+          </p>
         )}
-      </p>
+      </div>
 
       {onFileConsistent !== null ? (
         <p>
@@ -169,28 +246,33 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
         </p>
       ) : onFileOptions.size > 1 ? (
         <p>
-          Your bills show different options across months ({[...onFileOptions].map((o) => `Option ${o}`).join(', ')})
-          — see the &quot;On file&quot; column below for which applies to each.
+          Your bills show different options across months ({[...onFileOptions].map((o) => `Option ${o}`).join(', ')}).
+          See the &quot;On file&quot; column below for which applies to each.
         </p>
       ) : (
         <p>
-          We couldn&apos;t automatically tell which option your bills are currently on from the printed rate schedule
-          — see the &quot;On file&quot; column below for the raw text.
+          We couldn&apos;t automatically tell which option your bills are currently on from the printed rate
+          schedule. See the &quot;On file&quot; column below for the raw text.
         </p>
       )}
 
       <h2>Month by month</h2>
-      <div style={{ overflowX: 'auto' }}>
-        <table style={{ borderCollapse: 'collapse' }}>
+      <div className="month-cards">
+        {comparisons.map((c) => (
+          <MonthCard key={c.filename} c={c} />
+        ))}
+      </div>
+      <div className="month-table-wrap table-scroll">
+        <table className="data-table">
           <thead>
-            <tr style={{ textAlign: 'left', color: '#666' }}>
-              <th style={{ paddingRight: '1rem' }}>Month</th>
-              <th style={{ textAlign: 'right', paddingRight: '1rem' }}>Option D</th>
-              <th style={{ textAlign: 'right', paddingRight: '1rem' }}>Option E</th>
-              <th style={{ paddingRight: '1rem' }}>Cheaper</th>
-              <th style={{ textAlign: 'right', paddingRight: '1rem' }}>Difference</th>
-              <th style={{ paddingRight: '1rem' }}>On file</th>
-              <th style={{ textAlign: 'right' }}>Actually billed</th>
+            <tr>
+              <th>Month</th>
+              <th className="num">Option D</th>
+              <th className="num">Option E</th>
+              <th>Cheaper</th>
+              <th className="num">Difference</th>
+              <th>On file</th>
+              <th className="num">Actually billed</th>
             </tr>
           </thead>
           <tbody>
@@ -200,24 +282,32 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
           </tbody>
         </table>
       </div>
-      <p style={{ color: '#666', fontSize: '0.9em' }}>
-        &quot;Actually billed&quot; is what your bill says you paid — it&apos;s shown for context, not compared
-        directly, since it reflects whatever option you were actually on, not necessarily Option D or E.
+      <p className="small muted">
+        &quot;Actually billed&quot; is what your bill says you paid. It&apos;s here for context. Your actual
+        option on file might be Option D, Option E, or something else the report doesn&apos;t compare directly.
       </p>
 
-      <details style={{ marginTop: '1rem' }}>
+      <details style={{ marginTop: '1.5rem' }}>
         <summary>Full itemized breakdown, month by month</summary>
         {comparisons.map((c) => (
-          <div key={c.filename} style={{ margin: '1rem 0' }}>
+          <div key={c.filename} className="card" style={{ marginTop: '1rem' }}>
             <h3>{c.monthLabel}</h3>
-            <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
-              <div>
-                <strong>Option D — {formatUsd(c.billD.total)}</strong>
-                <LineTable lines={c.billD.lines} />
+            <div style={{ display: 'flex', gap: '2.5rem', flexWrap: 'wrap' }}>
+              <div style={{ flex: '1 1 16rem', minWidth: 0 }}>
+                <div className="ledger-row ledger-total">
+                  <span className="ledger-label">Option D</span>
+                  <span className="ledger-fill" aria-hidden="true" />
+                  <span className="ledger-value">{formatUsd(c.billD.total)}</span>
+                </div>
+                <LineLedger lines={c.billD.lines} />
               </div>
-              <div>
-                <strong>Option E — {formatUsd(c.billE.total)}</strong>
-                <LineTable lines={c.billE.lines} />
+              <div style={{ flex: '1 1 16rem', minWidth: 0 }}>
+                <div className="ledger-row ledger-total">
+                  <span className="ledger-label">Option E</span>
+                  <span className="ledger-fill" aria-hidden="true" />
+                  <span className="ledger-value">{formatUsd(c.billE.total)}</span>
+                </div>
+                <LineLedger lines={c.billE.lines} />
               </div>
             </div>
           </div>
@@ -227,19 +317,24 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       {engineWarnings.length > 0 ? (
         <details style={{ marginTop: '1rem' }}>
           <summary>Engine warnings ({engineWarnings.length})</summary>
-          <ul>
+          <ul className="small muted">
             {engineWarnings.map((w) => (
-              <li key={w}>{w}</li>
+              <li key={w} style={{ marginBottom: '0.5rem' }}>
+                {w}
+              </li>
             ))}
           </ul>
         </details>
       ) : null}
 
-      <p style={{ color: '#666', marginTop: '1.5rem', fontSize: '0.9em' }}>
-        Rates: {first.billD.tariffId} and {first.billE.tariffId}, sheet revision {first.billD.tariffProvenance.sheetRevision}
-        {' '}/ {first.billE.tariffProvenance.sheetRevision}. Both records are still marked pending human verification
-        against the source PDF (see <code>packages/tariff-library/PENDING.md</code>). Usage for these months is
-        ESTIMATED, not measured, unless noted otherwise — see the usage page for exactly how each month was built.
+      <hr className="hr" />
+
+      <p className="small muted">
+        Rates: {first.billD.tariffId} and {first.billE.tariffId}, sheet revision{' '}
+        {first.billD.tariffProvenance.sheetRevision} / {first.billE.tariffProvenance.sheetRevision}. Both records are
+        still marked pending human verification against the source PDF (see{' '}
+        <code>packages/tariff-library/PENDING.md</code>). Usage for these months is ESTIMATED, not measured, unless
+        noted otherwise. See the usage page for exactly how each month was built.
       </p>
     </main>
   );

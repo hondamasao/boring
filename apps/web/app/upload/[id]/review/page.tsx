@@ -1,8 +1,15 @@
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { extractBill, ExtractionError, type ExtractedBill, type ExtractedField } from '@boring/extraction';
+import { Progress } from '../../../../components/Progress';
 import { isValidUploadId, readBillFile, readManifest } from '../../../../lib/storage';
 import { readCachedExtraction, writeCachedExtraction } from '../../../../lib/extraction-storage';
 import { confirmExtraction } from './actions';
+
+export const metadata: Metadata = {
+  title: 'Review Extracted Values',
+  robots: { index: false, follow: false },
+};
 
 type BillResult =
   | { filename: string; status: 'ok'; data: ExtractedBill }
@@ -24,27 +31,39 @@ async function getOrExtract(uploadId: string, filename: string): Promise<BillRes
   }
 }
 
-function confidenceColor(confidence: number): string {
-  if (confidence >= 0.8) return '#1a7f37';
-  if (confidence >= 0.4) return '#9a6700';
-  return '#b00020';
+function confidenceStamp(confidence: number): { label: string; className: string } {
+  if (confidence >= 0.8) return { label: `${Math.round(confidence * 100)}%`, className: 'stamp-ok' };
+  if (confidence >= 0.4) return { label: `${Math.round(confidence * 100)}%`, className: 'stamp-warn' };
+  return { label: `${Math.round(confidence * 100)}%`, className: 'stamp-bad' };
 }
 
 function FieldRow({ label, field }: { label: string; field: ExtractedField<string | number> }) {
   const display = field.value === null ? 'Not found' : String(field.value);
+  const conf = confidenceStamp(field.confidence);
   return (
     <tr>
-      <td style={{ padding: '0.25rem 0.75rem 0.25rem 0', fontWeight: 'bold', whiteSpace: 'nowrap', verticalAlign: 'top' }}>
-        {label}
+      <td style={{ whiteSpace: 'nowrap', fontWeight: 600 }}>{label}</td>
+      <td className={field.value === null ? 'muted' : 'num'}>{display}</td>
+      <td>
+        <span className={`stamp ${conf.className}`}>{conf.label}</span>
       </td>
-      <td style={{ padding: '0.25rem 0.75rem', verticalAlign: 'top' }}>{display}</td>
-      <td style={{ padding: '0.25rem 0.75rem', color: confidenceColor(field.confidence), verticalAlign: 'top' }}>
-        {Math.round(field.confidence * 100)}%
-      </td>
-      <td style={{ padding: '0.25rem 0', color: '#666', fontStyle: 'italic', verticalAlign: 'top' }}>
-        {field.evidence ? `“${field.evidence}”` : '—'}
-      </td>
+      <td className="quote small">{field.evidence ? `“${field.evidence}”` : '—'}</td>
     </tr>
+  );
+}
+
+function FieldCard({ label, field }: { label: string; field: ExtractedField<string | number> }) {
+  const display = field.value === null ? 'Not found' : String(field.value);
+  const conf = confidenceStamp(field.confidence);
+  return (
+    <div className="field-card">
+      <div className="field-card-head">
+        <span className="field-card-label">{label}</span>
+        <span className={`stamp ${conf.className}`}>{conf.label}</span>
+      </div>
+      <p className={`field-card-value ${field.value === null ? 'muted' : 'num'}`}>{display}</p>
+      {field.evidence ? <p className="quote small" style={{ margin: 0 }}>“{field.evidence}”</p> : null}
+    </div>
   );
 }
 
@@ -53,10 +72,19 @@ function BillSection({ result }: { result: BillResult }) {
 
   if (result.status === 'error') {
     return (
-      <section style={{ border: '1px solid #b00020', borderRadius: 4, padding: '1rem', marginBottom: '1.5rem' }}>
-        <h2>{displayName}</h2>
-        <p style={{ color: '#b00020' }}>Extraction failed: {result.message}</p>
-      </section>
+      <div className="card card-bad">
+        <div className="card-header">
+          <h2 className="subhead" style={{ marginBottom: 0 }}>{displayName}</h2>
+          <span className="stamp stamp-bad">Extraction failed</span>
+        </div>
+        <p className="small" style={{ fontFamily: 'var(--font-mono)' }}>
+          {result.message}
+        </p>
+        <p className="small muted" style={{ marginBottom: 0 }}>
+          This bill couldn&apos;t be read automatically. Try re-uploading a clearer scan, or leave
+          it out for now. The rest of your bills will still work.
+        </p>
+      </div>
     );
   }
 
@@ -72,38 +100,51 @@ function BillSection({ result }: { result: BillResult }) {
   const lowConfidenceCount = fields.filter((f) => f.value === null || f.confidence < 0.5).length;
 
   return (
-    <section style={{ border: '1px solid #ccc', borderRadius: 4, padding: '1rem', marginBottom: '1.5rem' }}>
-      <h2>{displayName}</h2>
-      {lowConfidenceCount > 0 ? (
-        <p style={{ color: '#9a6700' }}>
-          {lowConfidenceCount} field{lowConfidenceCount === 1 ? '' : 's'} below 50% confidence or not found —
-          check these against the PDF closely.
-        </p>
-      ) : null}
-      <table style={{ borderCollapse: 'collapse' }}>
-        <thead>
-          <tr style={{ textAlign: 'left', color: '#666' }}>
-            <th>Field</th>
-            <th>Value</th>
-            <th>Confidence</th>
-            <th>Evidence quoted from the bill</th>
-          </tr>
-        </thead>
-        <tbody>
-          <FieldRow label="Billing period start" field={data.billingPeriod.start} />
-          <FieldRow label="Billing period end" field={data.billingPeriod.end} />
-          <FieldRow label="Rate schedule" field={data.rateSchedule} />
-          <FieldRow label="Total kWh" field={data.totalKwh} />
-          <FieldRow label="Total demand (kW)" field={data.totalDemandKw} />
-          <FieldRow label="Total amount ($)" field={data.totalAmount} />
-        </tbody>
-      </table>
+    <div className="card">
+      <div className="card-header">
+        <h2 className="subhead" style={{ marginBottom: 0 }}>{displayName}</h2>
+        {lowConfidenceCount > 0 ? (
+          <span className="stamp stamp-warn">
+            {lowConfidenceCount} field{lowConfidenceCount === 1 ? '' : 's'} need review
+          </span>
+        ) : (
+          <span className="stamp stamp-ok">Looks clean</span>
+        )}
+      </div>
+      <div className="field-cards">
+        <FieldCard label="Billing period start" field={data.billingPeriod.start} />
+        <FieldCard label="Billing period end" field={data.billingPeriod.end} />
+        <FieldCard label="Rate schedule" field={data.rateSchedule} />
+        <FieldCard label="Total kWh" field={data.totalKwh} />
+        <FieldCard label="Total demand (kW)" field={data.totalDemandKw} />
+        <FieldCard label="Total amount ($)" field={data.totalAmount} />
+      </div>
+      <div className="field-table-wrap table-scroll">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Value</th>
+              <th>Confidence</th>
+              <th>Evidence quoted from the bill</th>
+            </tr>
+          </thead>
+          <tbody>
+            <FieldRow label="Billing period start" field={data.billingPeriod.start} />
+            <FieldRow label="Billing period end" field={data.billingPeriod.end} />
+            <FieldRow label="Rate schedule" field={data.rateSchedule} />
+            <FieldRow label="Total kWh" field={data.totalKwh} />
+            <FieldRow label="Total demand (kW)" field={data.totalDemandKw} />
+            <FieldRow label="Total amount ($)" field={data.totalAmount} />
+          </tbody>
+        </table>
+      </div>
       {data.extractionNotes ? (
-        <p>
+        <p className="small" style={{ marginTop: '0.75rem', marginBottom: 0 }}>
           <strong>Note:</strong> {data.extractionNotes}
         </p>
       ) : null}
-    </section>
+    </div>
   );
 }
 
@@ -119,11 +160,13 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
   const confirmAction = confirmExtraction.bind(null, id, okFilenames);
 
   return (
-    <main>
+    <main className="shell-main">
+      <Progress current={2} />
       <h1>Review extracted values</h1>
-      <p>
-        An AI model read these values off your bills — nobody has typed or checked them yet. Compare every field
-        against the actual PDF before confirming, especially anything flagged below 50% confidence.
+      <p className="muted">
+        An AI model read these values off your bills. Nobody has typed or checked them yet, so
+        compare every field against the actual PDF before confirming. Watch especially for anything
+        flagged below 50% confidence.
       </p>
 
       {results.map((result) => (
@@ -131,17 +174,24 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
       ))}
 
       {okFilenames.length > 0 ? (
-        <form action={confirmAction} style={{ marginTop: '1rem' }}>
-          <button type="submit">Confirm these values are correct →</button>
+        <form action={confirmAction} style={{ marginTop: '0.5rem' }}>
+          <button type="submit" className="btn">
+            Confirm these values are correct →
+          </button>
           {hasFailures ? (
-            <p style={{ color: '#b00020' }}>
-              Only the {okFilenames.length} bill{okFilenames.length === 1 ? '' : 's'} that extracted successfully
-              will be confirmed. The failed bill(s) above need attention separately.
+            <p className="small" style={{ color: 'var(--bad)', marginTop: '0.75rem' }}>
+              Only the {okFilenames.length} bill{okFilenames.length === 1 ? '' : 's'} that
+              extracted successfully will be confirmed. The failed bill(s) above need attention
+              separately.
             </p>
           ) : null}
         </form>
       ) : (
-        <p style={{ color: '#b00020', fontWeight: 'bold' }}>Every bill failed to extract. Nothing to confirm yet.</p>
+        <div className="notice notice-bad">
+          <p style={{ marginBottom: 0 }}>
+            <strong>Every bill failed to extract.</strong>{' '}Nothing to confirm yet.
+          </p>
+        </div>
       )}
     </main>
   );
