@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { Analytics } from '@vercel/analytics/next';
@@ -26,6 +26,16 @@ const plexMono = IBM_Plex_Mono({
   variable: '--font-plex-mono',
   display: 'swap',
 });
+
+// The whole palette is light-only, but nothing said so explicitly. On a
+// browser/OS in dark mode, the initial unstyled paint (before the external
+// stylesheet arrives) defaults to a dark canvas, then the real light
+// background paints over it once CSS loads — a visible flash on a real
+// network round-trip, invisible locally where CSS is served instantly.
+// This meta tag ships in the first HTML byte, ahead of any CSS fetch.
+export const viewport: Viewport = {
+  colorScheme: 'light',
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
