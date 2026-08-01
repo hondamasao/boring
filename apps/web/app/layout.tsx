@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import Link from 'next/link';
+import { Analytics } from '@vercel/analytics/next';
 import { IBM_Plex_Mono, Public_Sans, Source_Serif_4 } from 'next/font/google';
 import { SITE_URL } from '../lib/site';
 import './globals.css';
@@ -57,6 +58,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           </div>
         </header>
         {children}
+        <Analytics />
       </body>
     </html>
   );

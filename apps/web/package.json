@@ -13,6 +13,7 @@
     "@boring/load-shape-estimator": "workspace:*",
     "@boring/rating-engine": "workspace:*",
     "@boring/tariff-schema": "workspace:*",
+    "@vercel/analytics": "^2.0.1",
     "@vercel/blob": "^2.6.1",
     "luxon": "^3.7.2",
     "next": "^16.2.12",
