@@ -18,6 +18,8 @@
    --------------------------------------------------------------------- */
 
 :root {
+  color-scheme: light;
+
   --paper: #f3f6f6;
   --surface: #ffffff;
   --surface-sunk: #eef2f1;
