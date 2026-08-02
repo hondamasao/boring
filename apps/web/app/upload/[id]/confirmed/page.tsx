@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { Progress } from '../../../../components/Progress';
 import { isValidUploadId } from '../../../../lib/storage';
 import { readConfirmation } from '../../../../lib/extraction-storage';
+import { Button } from '@/components/ui/button';
 
 export const metadata: Metadata = {
   title: 'Values Confirmed',
@@ -25,9 +26,9 @@ export default async function ConfirmedPage({ params }: { params: Promise<{ id: 
         <span className="num">{new Date(confirmation.confirmedAt).toLocaleString()}</span>.
       </p>
       <p>
-        <Link href={`/upload/${id}/usage`} className="btn">
-          Estimate your usage pattern →
-        </Link>
+        <Button asChild>
+          <Link href={`/upload/${id}/usage`}>Estimate your usage pattern →</Link>
+        </Button>
       </p>
     </main>
   );

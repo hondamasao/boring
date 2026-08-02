@@ -5,6 +5,9 @@ import { Progress } from '../../../../components/Progress';
 import { isValidUploadId, readBillFile, readManifest } from '../../../../lib/storage';
 import { readCachedExtraction, writeCachedExtraction } from '../../../../lib/extraction-storage';
 import { confirmExtraction } from './actions';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 
 export const metadata: Metadata = {
   title: 'Review Extracted Values',
@@ -41,14 +44,16 @@ function FieldRow({ label, field }: { label: string; field: ExtractedField<strin
   const display = field.value === null ? 'Not found' : String(field.value);
   const conf = confidenceStamp(field.confidence);
   return (
-    <tr>
-      <td style={{ whiteSpace: 'nowrap', fontWeight: 600 }}>{label}</td>
-      <td className={field.value === null ? 'muted' : 'num'}>{display}</td>
-      <td>
+    <TableRow>
+      <TableCell style={{ fontWeight: 600 }}>{label}</TableCell>
+      <TableCell className={field.value === null ? 'muted' : 'num'}>{display}</TableCell>
+      <TableCell>
         <span className={`stamp ${conf.className}`}>{conf.label}</span>
-      </td>
-      <td className="quote small">{field.evidence ? `“${field.evidence}”` : '—'}</td>
-    </tr>
+      </TableCell>
+      <TableCell className="quote small" style={{ whiteSpace: 'normal' }}>
+        {field.evidence ? `“${field.evidence}”` : '—'}
+      </TableCell>
+    </TableRow>
   );
 }
 
@@ -72,19 +77,21 @@ function BillSection({ result }: { result: BillResult }) {
 
   if (result.status === 'error') {
     return (
-      <div className="card card-bad">
-        <div className="card-header">
-          <h2 className="subhead" style={{ marginBottom: 0 }}>{displayName}</h2>
-          <span className="stamp stamp-bad">Extraction failed</span>
-        </div>
-        <p className="small" style={{ fontFamily: 'var(--font-mono)' }}>
-          {result.message}
-        </p>
-        <p className="small muted" style={{ marginBottom: 0 }}>
-          This bill couldn&apos;t be read automatically. Try re-uploading a clearer scan, or leave
-          it out for now. The rest of your bills will still work.
-        </p>
-      </div>
+      <Card style={{ borderColor: 'var(--bad-line)', background: 'var(--bad-bg)' }}>
+        <CardContent>
+          <div className="card-header">
+            <h2 className="subhead" style={{ marginBottom: 0 }}>{displayName}</h2>
+            <span className="stamp stamp-bad">Extraction failed</span>
+          </div>
+          <p className="small" style={{ fontFamily: 'var(--font-mono)' }}>
+            {result.message}
+          </p>
+          <p className="small muted" style={{ marginBottom: 0 }}>
+            This bill couldn&apos;t be read automatically. Try re-uploading a clearer scan, or leave
+            it out for now. The rest of your bills will still work.
+          </p>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -100,51 +107,53 @@ function BillSection({ result }: { result: BillResult }) {
   const lowConfidenceCount = fields.filter((f) => f.value === null || f.confidence < 0.5).length;
 
   return (
-    <div className="card">
-      <div className="card-header">
-        <h2 className="subhead" style={{ marginBottom: 0 }}>{displayName}</h2>
-        {lowConfidenceCount > 0 ? (
-          <span className="stamp stamp-warn">
-            {lowConfidenceCount} field{lowConfidenceCount === 1 ? '' : 's'} need review
-          </span>
-        ) : (
-          <span className="stamp stamp-ok">Looks clean</span>
-        )}
-      </div>
-      <div className="field-cards">
-        <FieldCard label="Billing period start" field={data.billingPeriod.start} />
-        <FieldCard label="Billing period end" field={data.billingPeriod.end} />
-        <FieldCard label="Rate schedule" field={data.rateSchedule} />
-        <FieldCard label="Total kWh" field={data.totalKwh} />
-        <FieldCard label="Total demand (kW)" field={data.totalDemandKw} />
-        <FieldCard label="Total amount ($)" field={data.totalAmount} />
-      </div>
-      <div className="field-table-wrap table-scroll">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Field</th>
-              <th>Value</th>
-              <th>Confidence</th>
-              <th>Evidence quoted from the bill</th>
-            </tr>
-          </thead>
-          <tbody>
-            <FieldRow label="Billing period start" field={data.billingPeriod.start} />
-            <FieldRow label="Billing period end" field={data.billingPeriod.end} />
-            <FieldRow label="Rate schedule" field={data.rateSchedule} />
-            <FieldRow label="Total kWh" field={data.totalKwh} />
-            <FieldRow label="Total demand (kW)" field={data.totalDemandKw} />
-            <FieldRow label="Total amount ($)" field={data.totalAmount} />
-          </tbody>
-        </table>
-      </div>
-      {data.extractionNotes ? (
-        <p className="small" style={{ marginTop: '0.75rem', marginBottom: 0 }}>
-          <strong>Note:</strong> {data.extractionNotes}
-        </p>
-      ) : null}
-    </div>
+    <Card>
+      <CardContent>
+        <div className="card-header">
+          <h2 className="subhead" style={{ marginBottom: 0 }}>{displayName}</h2>
+          {lowConfidenceCount > 0 ? (
+            <span className="stamp stamp-warn">
+              {lowConfidenceCount} field{lowConfidenceCount === 1 ? '' : 's'} need review
+            </span>
+          ) : (
+            <span className="stamp stamp-ok">Looks clean</span>
+          )}
+        </div>
+        <div className="field-cards">
+          <FieldCard label="Billing period start" field={data.billingPeriod.start} />
+          <FieldCard label="Billing period end" field={data.billingPeriod.end} />
+          <FieldCard label="Rate schedule" field={data.rateSchedule} />
+          <FieldCard label="Total kWh" field={data.totalKwh} />
+          <FieldCard label="Total demand (kW)" field={data.totalDemandKw} />
+          <FieldCard label="Total amount ($)" field={data.totalAmount} />
+        </div>
+        <div className="field-table-wrap">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Field</TableHead>
+                <TableHead>Value</TableHead>
+                <TableHead>Confidence</TableHead>
+                <TableHead>Evidence quoted from the bill</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <FieldRow label="Billing period start" field={data.billingPeriod.start} />
+              <FieldRow label="Billing period end" field={data.billingPeriod.end} />
+              <FieldRow label="Rate schedule" field={data.rateSchedule} />
+              <FieldRow label="Total kWh" field={data.totalKwh} />
+              <FieldRow label="Total demand (kW)" field={data.totalDemandKw} />
+              <FieldRow label="Total amount ($)" field={data.totalAmount} />
+            </TableBody>
+          </Table>
+        </div>
+        {data.extractionNotes ? (
+          <p className="small" style={{ marginTop: '0.75rem', marginBottom: 0 }}>
+            <strong>Note:</strong> {data.extractionNotes}
+          </p>
+        ) : null}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -175,9 +184,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
 
       {okFilenames.length > 0 ? (
         <form action={confirmAction} style={{ marginTop: '0.5rem' }}>
-          <button type="submit" className="btn">
-            Confirm these values are correct →
-          </button>
+          <Button type="submit">Confirm these values are correct →</Button>
           {hasFailures ? (
             <p className="small" style={{ color: 'var(--bad)', marginTop: '0.75rem' }}>
               Only the {okFilenames.length} bill{okFilenames.length === 1 ? '' : 's'} that

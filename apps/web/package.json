@@ -13,12 +13,18 @@
     "@boring/load-shape-estimator": "workspace:*",
     "@boring/rating-engine": "workspace:*",
     "@boring/tariff-schema": "workspace:*",
+    "@tailwindcss/postcss": "^4.3.3",
     "@vercel/analytics": "^2.0.1",
     "@vercel/blob": "^2.6.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "luxon": "^3.7.2",
     "next": "^16.2.12",
+    "radix-ui": "^1.6.7",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "tailwind-merge": "^3.6.0",
+    "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
     "@types/luxon": "^3.7.1",

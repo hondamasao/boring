@@ -1,3 +1,5 @@
+@import 'tailwindcss';
+
 /* ---------------------------------------------------------------------
    Design tokens.
 
@@ -48,14 +50,70 @@
   --radius: 8px;
   --radius-lg: 14px;
 
-  --shadow-card: 0 1px 2px rgba(22, 35, 42, 0.04), 0 1px 8px rgba(22, 35, 42, 0.03);
-
   --measure: 42rem;
   --measure-wide: 60rem;
 
   --font-display: var(--font-source-serif), 'Iowan Old Style', Georgia, serif;
   --font-body: var(--font-public-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, 'SFMono-Regular', Menlo, monospace;
+}
+
+/* ---------------------------------------------------------------------
+   shadcn/ui token bridge.
+
+   Every value on the right is one of the design tokens above — nothing new
+   gets introduced here, this block only gives Tailwind's utility classes
+   (bg-primary, text-muted-foreground, ...) a name for a color that already
+   exists. --color-* is Tailwind v4's own namespace, so this can't collide
+   with the plain --accent/--ink/etc. custom properties used throughout the
+   rest of this file.
+   --------------------------------------------------------------------- */
+
+@theme inline {
+  --color-background: var(--paper);
+  --color-foreground: var(--ink);
+
+  --color-card: var(--surface);
+  --color-card-foreground: var(--ink);
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--ink);
+
+  --color-primary: var(--accent);
+  --color-primary-foreground: #ffffff;
+  --color-secondary: var(--surface-sunk);
+  --color-secondary-foreground: var(--ink);
+
+  --color-muted: var(--surface-sunk);
+  --color-muted-foreground: var(--ink-soft);
+  --color-accent: var(--accent-soft);
+  --color-accent-foreground: var(--accent-ink);
+
+  --color-destructive: var(--bad);
+  --color-destructive-foreground: #ffffff;
+
+  --color-border: var(--line);
+  --color-input: var(--line-strong);
+  --color-ring: var(--accent);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: var(--radius-lg);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 400ms ease-out both;
 }
 
 * {
@@ -115,11 +173,17 @@ p {
   color: var(--ink);
 }
 
-a {
+/* :not([data-slot]) excludes shadcn/ui components (Button asChild rendering
+   an <a>, etc.) — every one of them tags itself with data-slot, and without
+   this exclusion this plain, unlayered rule would beat their Tailwind
+   utility classes regardless of specificity (unlayered CSS always wins over
+   anything inside Tailwind's @layer utilities). */
+a:not([data-slot]) {
   color: var(--accent);
+  transition: color 150ms ease;
 }
 
-a:hover {
+a:not([data-slot]):hover {
   color: var(--accent-ink);
 }
 
@@ -258,19 +322,10 @@ code {
    Cards, callouts, notices
    --------------------------------------------------------------------- */
 
-.card {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-card);
-  padding: 1.25rem 1.35rem;
-  margin-bottom: 1.5rem;
-}
-
-.card-bad {
-  border-color: var(--bad-line);
-  background: var(--bad-bg);
-}
+/* .card and .card-bad were replaced by components/ui/card.tsx (Card,
+   CardContent) — see git history if the old flat-border version is ever
+   needed again. .card-header remains: it's a plain layout utility, still
+   used inside the new Card for the title+stamp row. */
 
 .card-header {
   display: flex;
@@ -321,45 +376,10 @@ code {
 }
 
 /* ---------------------------------------------------------------------
-   Buttons + forms
+   Forms
+
+   Buttons moved to components/ui/button.tsx (shadcn/ui Button).
    --------------------------------------------------------------------- */
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-family: var(--font-body);
-  font-size: 0.95rem;
-  font-weight: 600;
-  padding: 0.7rem 1.25rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--accent);
-  background: var(--accent);
-  color: #fff;
-  cursor: pointer;
-  text-decoration: none;
-  transition: background-color 120ms ease, border-color 120ms ease, transform 60ms ease;
-}
-
-.btn:hover {
-  background: var(--accent-ink);
-  border-color: var(--accent-ink);
-  color: #fff;
-}
-
-.btn:active {
-  transform: translateY(1px);
-}
-
-.btn-secondary {
-  background: transparent;
-  color: var(--accent);
-}
-
-.btn-secondary:hover {
-  background: var(--accent-soft);
-  color: var(--accent-ink);
-}
 
 .field-group {
   border: 1px dashed var(--line-strong);
@@ -378,35 +398,10 @@ code {
   padding: 0 0.4em;
 }
 
-.field-group input[type='file'] {
-  display: block;
-  width: 100%;
-  font-family: var(--font-body);
-  font-size: 0.9rem;
-  color: var(--ink-soft);
-  margin-top: 0.5rem;
-}
-
 .field-hint {
   font-size: 0.85rem;
   color: var(--ink-soft);
   margin: 0.4rem 0 0;
-}
-
-.feedback-note {
-  width: 100%;
-  font-family: var(--font-body);
-  font-size: 0.92rem;
-  color: var(--ink);
-  padding: 0.6rem 0.75rem;
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius-sm);
-  resize: vertical;
-}
-
-.feedback-note:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
 }
 
 /* ---------------------------------------------------------------------

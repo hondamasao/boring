@@ -8,6 +8,11 @@ import { compareBillToOptions, type ExcludedBill, type MonthlyComparison } from 
 import { ensureReportRecord } from '../../../../lib/report-storage';
 import { readFeedback } from '../../../../lib/feedback-storage';
 import { submitFeedback } from './actions';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 
 // The whole reason this field exists: a report holds one customer's real
 // bill totals, rate schedule, and dollar figures behind an unguessable
@@ -49,17 +54,17 @@ function CheaperStamp({ cheaper }: { cheaper: MonthlyComparison['cheaper'] }) {
 
 function MonthRow({ c }: { c: MonthlyComparison }) {
   return (
-    <tr>
-      <td style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{c.monthLabel}</td>
-      <td className="num">{formatUsd(c.billD.total)}</td>
-      <td className="num">{formatUsd(c.billE.total)}</td>
-      <td>
+    <TableRow>
+      <TableCell style={{ fontWeight: 600 }}>{c.monthLabel}</TableCell>
+      <TableCell className="num">{formatUsd(c.billD.total)}</TableCell>
+      <TableCell className="num">{formatUsd(c.billE.total)}</TableCell>
+      <TableCell>
         <CheaperStamp cheaper={c.cheaper} />
-      </td>
-      <td className="num">{formatUsd(c.deltaAbs)}</td>
-      <td className="small muted">{onFileLabelFor(c)}</td>
-      <td className="num">{c.actualBilled !== null ? formatUsd(c.actualBilled) : '—'}</td>
-    </tr>
+      </TableCell>
+      <TableCell className="num">{formatUsd(c.deltaAbs)}</TableCell>
+      <TableCell className="small muted">{onFileLabelFor(c)}</TableCell>
+      <TableCell className="num">{c.actualBilled !== null ? formatUsd(c.actualBilled) : '—'}</TableCell>
+    </TableRow>
   );
 }
 
@@ -219,40 +224,42 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
         </p>
       )}
 
-      <div className="card" style={{ background: 'var(--surface-sunk)', borderStyle: 'dashed' }}>
-        <div className="stack">
-          <div className="ledger-row">
-            <span className="ledger-label">Option D, across your {monthsCount} bill{monthsCount === 1 ? '' : 's'}</span>
-            <span className="ledger-fill" aria-hidden="true" />
-            <span className="ledger-value">{formatUsd(totalD)}</span>
+      <Card style={{ background: 'var(--surface-sunk)', borderStyle: 'dashed' }}>
+        <CardContent>
+          <div className="stack">
+            <div className="ledger-row">
+              <span className="ledger-label">Option D, across your {monthsCount} bill{monthsCount === 1 ? '' : 's'}</span>
+              <span className="ledger-fill" aria-hidden="true" />
+              <span className="ledger-value">{formatUsd(totalD)}</span>
+            </div>
+            <div className="ledger-row">
+              <span className="ledger-label">Option E, across your {monthsCount} bill{monthsCount === 1 ? '' : 's'}</span>
+              <span className="ledger-fill" aria-hidden="true" />
+              <span className="ledger-value">{formatUsd(totalE)}</span>
+            </div>
+            <div className="ledger-row ledger-total">
+              <span className="ledger-label">
+                {scaledAnnualDelta !== null ? 'Scaled to a full year' : 'Real annual difference'}
+              </span>
+              <span className="ledger-fill" aria-hidden="true" />
+              <span className="ledger-value">
+                {formatUsd(scaledAnnualDelta ?? overallDelta)}
+                {scaledAnnualDelta !== null ? '/yr*' : '/yr'}
+              </span>
+            </div>
           </div>
-          <div className="ledger-row">
-            <span className="ledger-label">Option E, across your {monthsCount} bill{monthsCount === 1 ? '' : 's'}</span>
-            <span className="ledger-fill" aria-hidden="true" />
-            <span className="ledger-value">{formatUsd(totalE)}</span>
-          </div>
-          <div className="ledger-row ledger-total">
-            <span className="ledger-label">
-              {scaledAnnualDelta !== null ? 'Scaled to a full year' : 'Real annual difference'}
-            </span>
-            <span className="ledger-fill" aria-hidden="true" />
-            <span className="ledger-value">
-              {formatUsd(scaledAnnualDelta ?? overallDelta)}
-              {scaledAnnualDelta !== null ? '/yr*' : '/yr'}
-            </span>
-          </div>
-        </div>
-        {scaledAnnualDelta !== null ? (
-          <p className="small muted" style={{ marginTop: '0.75rem', marginBottom: 0 }}>
-            * Scaled up from {monthsCount} month{monthsCount === 1 ? '' : 's'} of confirmed bills, not a real annual
-            figure. Upload all 12 bills for one.
-          </p>
-        ) : (
-          <p className="small muted" style={{ marginTop: '0.75rem', marginBottom: 0 }}>
-            A real annual figure, since you uploaded a full 12 months.
-          </p>
-        )}
-      </div>
+          {scaledAnnualDelta !== null ? (
+            <p className="small muted" style={{ marginTop: '0.75rem', marginBottom: 0 }}>
+              * Scaled up from {monthsCount} month{monthsCount === 1 ? '' : 's'} of confirmed bills, not a real annual
+              figure. Upload all 12 bills for one.
+            </p>
+          ) : (
+            <p className="small muted" style={{ marginTop: '0.75rem', marginBottom: 0 }}>
+              A real annual figure, since you uploaded a full 12 months.
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
       {onFileConsistent !== null ? (
         <p>
@@ -276,25 +283,25 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
           <MonthCard key={c.filename} c={c} />
         ))}
       </div>
-      <div className="month-table-wrap table-scroll">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Month</th>
-              <th className="num">Option D</th>
-              <th className="num">Option E</th>
-              <th>Cheaper</th>
-              <th className="num">Difference</th>
-              <th>On file</th>
-              <th className="num">Actually billed</th>
-            </tr>
-          </thead>
-          <tbody>
+      <div className="month-table-wrap">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Month</TableHead>
+              <TableHead className="num">Option D</TableHead>
+              <TableHead className="num">Option E</TableHead>
+              <TableHead>Cheaper</TableHead>
+              <TableHead className="num">Difference</TableHead>
+              <TableHead>On file</TableHead>
+              <TableHead className="num">Actually billed</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {comparisons.map((c) => (
               <MonthRow key={c.filename} c={c} />
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
       <p className="small muted">
         &quot;Actually billed&quot; is what your bill says you paid. It&apos;s here for context. Your actual
@@ -304,27 +311,29 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       <details style={{ marginTop: '1.5rem' }}>
         <summary>Full itemized breakdown, month by month</summary>
         {comparisons.map((c) => (
-          <div key={c.filename} className="card" style={{ marginTop: '1rem' }}>
-            <h3>{c.monthLabel}</h3>
-            <div style={{ display: 'flex', gap: '2.5rem', flexWrap: 'wrap' }}>
-              <div style={{ flex: '1 1 16rem', minWidth: 0 }}>
-                <div className="ledger-row ledger-total">
-                  <span className="ledger-label">Option D</span>
-                  <span className="ledger-fill" aria-hidden="true" />
-                  <span className="ledger-value">{formatUsd(c.billD.total)}</span>
+          <Card key={c.filename} style={{ marginTop: '1rem' }}>
+            <CardContent>
+              <h3>{c.monthLabel}</h3>
+              <div style={{ display: 'flex', gap: '2.5rem', flexWrap: 'wrap' }}>
+                <div style={{ flex: '1 1 16rem', minWidth: 0 }}>
+                  <div className="ledger-row ledger-total">
+                    <span className="ledger-label">Option D</span>
+                    <span className="ledger-fill" aria-hidden="true" />
+                    <span className="ledger-value">{formatUsd(c.billD.total)}</span>
+                  </div>
+                  <LineLedger lines={c.billD.lines} />
                 </div>
-                <LineLedger lines={c.billD.lines} />
-              </div>
-              <div style={{ flex: '1 1 16rem', minWidth: 0 }}>
-                <div className="ledger-row ledger-total">
-                  <span className="ledger-label">Option E</span>
-                  <span className="ledger-fill" aria-hidden="true" />
-                  <span className="ledger-value">{formatUsd(c.billE.total)}</span>
+                <div style={{ flex: '1 1 16rem', minWidth: 0 }}>
+                  <div className="ledger-row ledger-total">
+                    <span className="ledger-label">Option E</span>
+                    <span className="ledger-fill" aria-hidden="true" />
+                    <span className="ledger-value">{formatUsd(c.billE.total)}</span>
+                  </div>
+                  <LineLedger lines={c.billE.lines} />
                 </div>
-                <LineLedger lines={c.billE.lines} />
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         ))}
       </details>
 
@@ -351,36 +360,38 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
         noted otherwise. See the usage page for exactly how each month was built.
       </p>
 
-      <div className="card" style={{ marginTop: '2rem' }}>
-        {feedback ? (
-          <p style={{ marginBottom: 0 }}>
-            <strong>Thanks, that&apos;s recorded.</strong> You said this{' '}
-            {feedback.answer === 'yes' ? 'matches' : feedback.answer === 'no' ? "doesn't match" : 'might match'} what
-            you&apos;re actually being charged.
-          </p>
-        ) : (
-          <form action={feedbackAction}>
-            <p style={{ fontWeight: 600, marginBottom: '0.75rem' }}>
-              Does this match what you&apos;re actually being charged?
+      <Card style={{ marginTop: '2rem' }}>
+        <CardContent>
+          {feedback ? (
+            <p style={{ marginBottom: 0 }}>
+              <strong>Thanks, that&apos;s recorded.</strong> You said this{' '}
+              {feedback.answer === 'yes' ? 'matches' : feedback.answer === 'no' ? "doesn't match" : 'might match'} what
+              you&apos;re actually being charged.
             </p>
-            <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '0.9rem' }}>
-              <button type="submit" name="answer" value="yes" className="btn btn-secondary">
-                Yes, close
-              </button>
-              <button type="submit" name="answer" value="no" className="btn btn-secondary">
-                No, way off
-              </button>
-              <button type="submit" name="answer" value="not_sure" className="btn btn-secondary">
-                Not sure
-              </button>
-            </div>
-            <label htmlFor="feedback-note" className="field-hint" style={{ display: 'block', marginBottom: '0.4rem' }}>
-              Anything else you want to tell us? Optional.
-            </label>
-            <textarea id="feedback-note" name="note" rows={3} className="feedback-note" />
-          </form>
-        )}
-      </div>
+          ) : (
+            <form action={feedbackAction}>
+              <p style={{ fontWeight: 600, marginBottom: '0.75rem' }}>
+                Does this match what you&apos;re actually being charged?
+              </p>
+              <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '0.9rem' }}>
+                <Button type="submit" name="answer" value="yes" variant="outline">
+                  Yes, close
+                </Button>
+                <Button type="submit" name="answer" value="no" variant="outline">
+                  No, way off
+                </Button>
+                <Button type="submit" name="answer" value="not_sure" variant="outline">
+                  Not sure
+                </Button>
+              </div>
+              <Label htmlFor="feedback-note" className="field-hint" style={{ marginBottom: '0.4rem' }}>
+                Anything else you want to tell us? Optional.
+              </Label>
+              <Textarea id="feedback-note" name="note" rows={3} style={{ marginTop: '0.4rem' }} />
+            </form>
+          )}
+        </CardContent>
+      </Card>
     </main>
   );
 }
