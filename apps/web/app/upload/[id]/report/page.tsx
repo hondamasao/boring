@@ -5,6 +5,9 @@ import { Progress } from '../../../../components/Progress';
 import { isValidUploadId, readManifest } from '../../../../lib/storage';
 import { readConfirmation } from '../../../../lib/extraction-storage';
 import { compareBillToOptions, type ExcludedBill, type MonthlyComparison } from '../../../../lib/compare-options';
+import { ensureReportRecord } from '../../../../lib/report-storage';
+import { readFeedback } from '../../../../lib/feedback-storage';
+import { submitFeedback } from './actions';
 
 // The whole reason this field exists: a report holds one customer's real
 // bill totals, rate schedule, and dollar figures behind an unguessable
@@ -163,6 +166,17 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   const engineWarnings = [...new Set(comparisons.flatMap((c) => [...c.billD.warnings, ...c.billE.warnings]))];
 
   const first = comparisons[0]!;
+
+  await ensureReportRecord(id, comparisons, {
+    totalD,
+    totalE,
+    overallCheaper,
+    annualDelta: scaledAnnualDelta ?? overallDelta,
+    annualDeltaIsScaled: scaledAnnualDelta !== null,
+    onFileOption: onFileConsistent,
+  });
+  const feedback = await readFeedback(id);
+  const feedbackAction = submitFeedback.bind(null, id);
 
   return (
     <main className="shell-main wide">
@@ -336,6 +350,37 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
         <code>packages/tariff-library/PENDING.md</code>). Usage for these months is ESTIMATED, not measured, unless
         noted otherwise. See the usage page for exactly how each month was built.
       </p>
+
+      <div className="card" style={{ marginTop: '2rem' }}>
+        {feedback ? (
+          <p style={{ marginBottom: 0 }}>
+            <strong>Thanks, that&apos;s recorded.</strong> You said this{' '}
+            {feedback.answer === 'yes' ? 'matches' : feedback.answer === 'no' ? "doesn't match" : 'might match'} what
+            you&apos;re actually being charged.
+          </p>
+        ) : (
+          <form action={feedbackAction}>
+            <p style={{ fontWeight: 600, marginBottom: '0.75rem' }}>
+              Does this match what you&apos;re actually being charged?
+            </p>
+            <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '0.9rem' }}>
+              <button type="submit" name="answer" value="yes" className="btn btn-secondary">
+                Yes, close
+              </button>
+              <button type="submit" name="answer" value="no" className="btn btn-secondary">
+                No, way off
+              </button>
+              <button type="submit" name="answer" value="not_sure" className="btn btn-secondary">
+                Not sure
+              </button>
+            </div>
+            <label htmlFor="feedback-note" className="field-hint" style={{ display: 'block', marginBottom: '0.4rem' }}>
+              Anything else you want to tell us? Optional.
+            </label>
+            <textarea id="feedback-note" name="note" rows={3} className="feedback-note" />
+          </form>
+        )}
+      </div>
     </main>
   );
 }
