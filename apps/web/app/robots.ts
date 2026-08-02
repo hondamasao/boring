@@ -10,7 +10,9 @@ export default function robots(): MetadataRoute.Robots {
       // (/upload/<id>, /upload/<id>/report, ...), so the bare /upload
       // form above stays allowed. Everything under it holds one
       // customer's private bill data behind an unguessable link.
-      disallow: '/upload/',
+      // /internal aggregates every customer's data and is password-gated
+      // by middleware.ts — it belongs here too, not just relying on that.
+      disallow: ['/upload/', '/internal'],
     },
     sitemap: `${SITE_URL}/sitemap.xml`,
   };

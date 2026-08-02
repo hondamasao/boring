@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { Progress } from '../../components/Progress';
 import { submitUpload } from './actions';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 const TITLE = 'Upload Your SCE Bills';
 const DESCRIPTION =
@@ -53,19 +55,23 @@ export default async function UploadPage({
       <form action={submitUpload} encType="multipart/form-data">
         <fieldset className="field-group">
           <legend>Bill PDFs (required, choose multiple)</legend>
-          <input type="file" name="bills" accept="application/pdf" multiple required />
+          <Input type="file" name="bills" accept="application/pdf" multiple required style={{ marginTop: '0.5rem' }} />
           <p className="field-hint">PDF only. One file per billing period.</p>
         </fieldset>
 
         <fieldset className="field-group">
           <legend>Green Button export (optional)</legend>
-          <input type="file" name="greenButton" accept=".xml,.csv,text/xml,text/csv" multiple />
+          <Input
+            type="file"
+            name="greenButton"
+            accept=".xml,.csv,text/xml,text/csv"
+            multiple
+            style={{ marginTop: '0.5rem' }}
+          />
           <p className="field-hint">XML or CSV. Don&apos;t have this? Skip it. We&apos;ll estimate your usage instead.</p>
         </fieldset>
 
-        <button type="submit" className="btn">
-          Upload
-        </button>
+        <Button type="submit">Upload</Button>
       </form>
     </main>
   );

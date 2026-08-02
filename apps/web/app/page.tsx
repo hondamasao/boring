@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 
 // The root layout's title template ("%s | Boring") only applies to nested
 // segments, not to the page co-located with the layout that defines it —
@@ -27,35 +29,37 @@ export default function HomePage() {
         alternative and tell you, plainly, whether a cheaper one exists, and by how much.
       </p>
       <p>
-        <Link href="/upload" className="btn">
-          Upload your bills →
-        </Link>
+        <Button asChild size="lg">
+          <Link href="/upload">Upload your bills →</Link>
+        </Button>
       </p>
 
-      <div className="card" style={{ marginTop: '2.5rem' }}>
-        <div className="stack">
-          <div className="ledger-row ledger-row-stamped">
-            <span className="ledger-label">Tariff rates</span>
-            <span className="ledger-fill" aria-hidden="true" />
-            <span className="stamp stamp-warn">Pending human review</span>
+      <Card style={{ marginTop: '2.5rem' }}>
+        <CardContent>
+          <div className="stack">
+            <div className="ledger-row ledger-row-stamped">
+              <span className="ledger-label">Tariff rates</span>
+              <span className="ledger-fill" aria-hidden="true" />
+              <span className="stamp stamp-warn">Pending human review</span>
+            </div>
+            <div className="ledger-row ledger-row-stamped">
+              <span className="ledger-label">What your bill says</span>
+              <span className="ledger-fill" aria-hidden="true" />
+              <span className="stamp stamp-accent">Read by AI, confirmed by you</span>
+            </div>
+            <div className="ledger-row ledger-row-stamped">
+              <span className="ledger-label">Your usage pattern</span>
+              <span className="ledger-fill" aria-hidden="true" />
+              <span className="stamp stamp-neutral">Estimated, unless noted</span>
+            </div>
+            <div className="ledger-row ledger-row-stamped">
+              <span className="ledger-label">Every dollar figure</span>
+              <span className="ledger-fill" aria-hidden="true" />
+              <span className="stamp stamp-ok">Cited to a tariff record</span>
+            </div>
           </div>
-          <div className="ledger-row ledger-row-stamped">
-            <span className="ledger-label">What your bill says</span>
-            <span className="ledger-fill" aria-hidden="true" />
-            <span className="stamp stamp-accent">Read by AI, confirmed by you</span>
-          </div>
-          <div className="ledger-row ledger-row-stamped">
-            <span className="ledger-label">Your usage pattern</span>
-            <span className="ledger-fill" aria-hidden="true" />
-            <span className="stamp stamp-neutral">Estimated, unless noted</span>
-          </div>
-          <div className="ledger-row ledger-row-stamped">
-            <span className="ledger-label">Every dollar figure</span>
-            <span className="ledger-fill" aria-hidden="true" />
-            <span className="stamp stamp-ok">Cited to a tariff record</span>
-          </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       <h2 className="section-label">Why free</h2>
       <p>
@@ -126,9 +130,9 @@ export default function HomePage() {
 
       <div className="cta-repeat">
         <p>
-          <Link href="/upload" className="btn">
-            Upload your bills →
-          </Link>
+          <Button asChild size="lg">
+            <Link href="/upload">Upload your bills →</Link>
+          </Button>
         </p>
       </div>
     </main>
